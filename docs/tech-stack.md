@@ -29,7 +29,7 @@ Um repositório único, dois times (back e front), integrados por um contrato de
 | Camada | Escolha | Por quê |
 |---|---|---|
 | Linguagem/Runtime | Java 21 | Definido na documentação do projeto (LTS). |
-| Framework | Spring Boot 3.3.x | Spring Web, Spring Data JPA, Spring Security — já definidos na doc. |
+| Framework | Spring Boot 4.x (última versão estável suportada) | Linha principal atual com suporte ativo. Usar Spring Web, Spring Data JPA e Spring Security. |
 | Build | Maven | Definido na documentação do projeto. |
 | Banco de dados | PostgreSQL 16 | Definido na documentação do projeto. |
 | Migração de schema | Flyway | Versiona o schema junto do código, sem passo manual — essencial com 3 devs de back mexendo no banco em paralelo. |
