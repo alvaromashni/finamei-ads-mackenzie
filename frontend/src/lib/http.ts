@@ -1,4 +1,13 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api/v1'
+const LOCAL_API_URL = 'http://localhost:8080/api/v1'
+const PRODUCTION_API_URL = 'https://finamei-ads-mackenzie.onrender.com/api/v1'
+
+/**
+ * `npm run dev` talks to the local backend; the production build (Vercel)
+ * talks to the backend on Render. VITE_API_URL overrides both.
+ */
+const API_URL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.PROD ? PRODUCTION_API_URL : LOCAL_API_URL)
 
 export class HttpError extends Error {
   readonly status: number
