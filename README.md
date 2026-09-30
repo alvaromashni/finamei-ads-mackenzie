@@ -38,7 +38,7 @@ Para executar os testes:
 
 ## Frontend
 
-Copie `frontend/.env.example` para `frontend/.env` se precisar alterar a URL da API.
+O `npm run dev` usa a API local (`http://localhost:8080/api/v1`), e o build de produção usa a API publicada no Render (`https://finamei-ads-mackenzie.onrender.com/api/v1`). Para apontar para outro backend, copie `frontend/.env.example` para `frontend/.env` e ajuste `VITE_API_URL`.
 
 ```bash
 cd frontend
