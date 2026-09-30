@@ -1,0 +1,40 @@
+# Perfil de produção (Render, free tier). Ativado pelo Dockerfile com
+# SPRING_PROFILES_ACTIVE=prod. Tudo o que não está aqui vem do application.yml.
+
+spring:
+  datasource:
+    # Obrigatórios em produção: sem valor padrão, a aplicação não sobe se faltarem.
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Poucas conexões bastam para o volume do projeto e economizam memória
+      # aqui e no banco.
+      maximum-pool-size: 5
+      minimum-idle: 1
+  main:
+    banner-mode: off
+
+server:
+  # O Render define a porta pela variável PORT.
+  port: ${PORT:8080}
+  shutdown: graceful
+  tomcat:
+    # O padrão é 200 threads; 20 atendem o uso esperado com bem menos memória.
+    threads:
+      max: 20
+      min-spare: 2
+    accept-count: 50
+
+app:
+  jwt:
+    # Obrigatório em produção: nunca usar o segredo de desenvolvimento.
+    secret: ${JWT_SECRET}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://finamei-ads-mackenzie.vercel.app}
+
+management:
+  endpoint:
+    health:
+      # Não expõe detalhes do banco para quem não está autenticado.
+      show-details: never
