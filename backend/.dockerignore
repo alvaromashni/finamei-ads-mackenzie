@@ -1,0 +1,10 @@
+# Artefatos de build e arquivos locais não entram na imagem.
+target/
+HELP.md
+.idea/
+.vscode/
+*.iml
+.env
+.env.*
+Dockerfile
+.dockerignore
