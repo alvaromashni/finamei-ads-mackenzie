@@ -108,7 +108,7 @@ describe('DashboardPage', () => {
       '50',
     )
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    // The backend does not send the proportional limit fields yet (RN01).
+    // Without a proportional limit there is no RN01 notice.
     expect(screen.queryByText(/Limite proporcional/)).not.toBeInTheDocument()
 
     const urls = fetchMock.mock.calls.map(([url]) => String(url))
@@ -125,6 +125,32 @@ describe('DashboardPage', () => {
     }
   })
 
+  it('entende a resposta do servidor exatamente como o backend a envia', async () => {
+    // Field names of RevenueSummaryResponse (backend, module revenue). If the
+    // contract changes on either side, this test must fail.
+    const respostaDoServidor =
+      '{"year":2026,"accumulated":66400.00,"limit":81000.00,"percentage":81.98,' +
+      '"band":"ATTENTION","proportionalLimit":false,"activeMonths":null}'
+    mockApi({
+      revenue: () =>
+        new Response(respostaDoServidor, {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    })
+    renderPage()
+
+    expect(
+      await screen.findByText(
+        'R$ 66.400,00 de R$ 81.000,00 (81% do limite anual do MEI)',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('progressbar')).toHaveAttribute(
+      'aria-valuenow',
+      '81',
+    )
+  })
+
   it('mostra o alerta de atenção a partir de 80% do limite (RN02)', async () => {
     mockApi({
       revenue: () =>
@@ -133,6 +159,8 @@ describe('DashboardPage', () => {
           accumulated: 66400,
           percentage: 81.98,
           band: 'ATTENTION',
+          proportionalLimit: false,
+          activeMonths: null,
         }),
     })
     renderPage()
@@ -150,6 +178,8 @@ describe('DashboardPage', () => {
           accumulated: 72891.9,
           percentage: 89.99,
           band: 'ATTENTION',
+          proportionalLimit: false,
+          activeMonths: null,
         }),
     })
     renderPage()
@@ -167,6 +197,8 @@ describe('DashboardPage', () => {
           accumulated: 75330,
           percentage: 93,
           band: 'CRITICAL',
+          proportionalLimit: false,
+          activeMonths: null,
         }),
     })
     renderPage()
@@ -184,6 +216,8 @@ describe('DashboardPage', () => {
           accumulated: 85000,
           percentage: 104.94,
           band: 'EXCEEDED',
+          proportionalLimit: false,
+          activeMonths: null,
         }),
     })
     renderPage()
