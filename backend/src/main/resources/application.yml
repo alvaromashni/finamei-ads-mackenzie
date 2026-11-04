@@ -33,6 +33,10 @@ springdoc:
     path: /swagger-ui.html
 
 finamei:
+  auth:
+    # RN09: bloqueio após N falhas seguidas de login, por M minutos.
+    max-failed-attempts: ${LOGIN_MAX_FAILED_ATTEMPTS:5}
+    lock-minutes: ${LOGIN_LOCK_MINUTES:15}
   revenue:
     annual-limit: 81000.00
     attention-percent: 80

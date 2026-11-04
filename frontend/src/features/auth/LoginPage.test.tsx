@@ -191,6 +191,24 @@ describe('LoginPage', () => {
     expect(sessionStorage.getItem(AUTH_STORAGE_KEY)).toBeNull()
   })
 
+  it('avisa quando a conta está bloqueada por tentativas (423) sem encerrar a tela', async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse(423, {
+        code: 'ACCOUNT_LOCKED',
+        message:
+          'Muitas tentativas de login malsucedidas. Tente novamente mais tarde.',
+      }),
+    )
+    renderLogin()
+
+    await fillAndSubmit('maria@exemplo.com', 'senha-secreta')
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Muitas tentativas de login malsucedidas. Tente novamente mais tarde.',
+    )
+    expect(sessionStorage.getItem(AUTH_STORAGE_KEY)).toBeNull()
+  })
+
   it('exibe os erros de campo retornados pelo backend (400)', async () => {
     fetchMock.mockResolvedValueOnce(
       jsonResponse(400, {
