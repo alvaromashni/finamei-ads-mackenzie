@@ -63,6 +63,10 @@ public class User {
 		this.email = email;
 	}
 
+	public void changeActive(boolean active) {
+		this.active = active;
+	}
+
 	@PrePersist
 	private void onCreate() {
 		OffsetDateTime now = OffsetDateTime.now();

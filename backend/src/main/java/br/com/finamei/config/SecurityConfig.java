@@ -4,6 +4,7 @@ import br.com.finamei.security.JwtAuthenticationFilter;
 import br.com.finamei.security.JwtService;
 import br.com.finamei.security.RestAccessDeniedHandler;
 import br.com.finamei.security.RestAuthenticationEntryPoint;
+import br.com.finamei.user.UserRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -52,6 +53,7 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(
 			HttpSecurity http,
 			JwtService jwtService,
+			UserRepository userRepository,
 			RestAuthenticationEntryPoint authenticationEntryPoint,
 			RestAccessDeniedHandler accessDeniedHandler) throws Exception {
 		return http
@@ -70,6 +72,8 @@ public class SecurityConfig {
 								"/swagger-ui/**",
 								"/api/v1/auth/**")
 						.permitAll()
+						// Gestão de contas: só o administrador. Sem acesso implícito a dados financeiros.
+						.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 						// RN11: só o MEI concede, lista e revoga acessos de contador.
 						.requestMatchers("/api/v1/accountant-access/**").hasRole("MEI")
 						// OF17: área do contador só para ACCOUNTANT e somente leitura (nenhum método de escrita).
@@ -81,7 +85,7 @@ public class SecurityConfig {
 						.requestMatchers(HttpMethod.PATCH, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
 						.requestMatchers(HttpMethod.DELETE, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
 						.anyRequest().authenticated())
-				.addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(new JwtAuthenticationFilter(jwtService, userRepository), UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 }
