@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import br.com.finamei.user.UserRepository;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
@@ -21,9 +22,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 	private static final String BEARER_PREFIX = "Bearer ";
 
 	private final JwtService jwtService;
+	private final UserRepository userRepository;
 
-	public JwtAuthenticationFilter(JwtService jwtService) {
+	public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
 		this.jwtService = jwtService;
+		this.userRepository = userRepository;
 	}
 
 	@Override
@@ -42,6 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		try {
 			Claims claims = jwtService.parseClaims(token);
 			UUID userId = UUID.fromString(claims.getSubject());
+			// Conta desativada por um administrador perde o acesso na hora, mesmo com token ainda válido.
+			if (userRepository.existsByIdAndActiveFalse(userId)) {
+				SecurityContextHolder.clearContext();
+				return;
+			}
 			String role = claims.get(JwtService.ROLE_CLAIM, String.class);
 
 			var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
