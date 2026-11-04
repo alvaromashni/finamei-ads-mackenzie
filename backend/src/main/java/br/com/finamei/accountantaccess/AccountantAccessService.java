@@ -1,6 +1,9 @@
 package br.com.finamei.accountantaccess;
 
 import br.com.finamei.accountantaccess.dto.AccountantAccessResponse;
+import br.com.finamei.audit.AuditAction;
+import br.com.finamei.audit.AuditResourceType;
+import br.com.finamei.audit.AuditService;
 import br.com.finamei.shared.error.AccountantAccessAlreadyGrantedException;
 import br.com.finamei.shared.error.ResourceNotFoundException;
 import br.com.finamei.user.Role;
@@ -29,12 +32,15 @@ public class AccountantAccessService {
 	private final AccountantAccessRepository repository;
 	private final UserRepository userRepository;
 	private final Clock clock;
+	private final AuditService auditService;
 
 	public AccountantAccessService(
-			AccountantAccessRepository repository, UserRepository userRepository, Clock clock) {
+			AccountantAccessRepository repository, UserRepository userRepository, Clock clock,
+			AuditService auditService) {
 		this.repository = repository;
 		this.userRepository = userRepository;
 		this.clock = clock;
+		this.auditService = auditService;
 	}
 
 	/** Acessos ativos concedidos pelo MEI. */
@@ -60,18 +66,23 @@ public class AccountantAccessService {
 				.orElseThrow(() -> new ResourceNotFoundException(ACCOUNTANT_NOT_FOUND));
 
 		OffsetDateTime now = OffsetDateTime.now(clock);
+		boolean[] reactivated = {false};
 		AccountantAccess access = repository.findByMeiIdAndAccountantId(meiId, accountant.getId())
 				.map(existing -> {
 					if (existing.isActive()) {
 						throw new AccountantAccessAlreadyGrantedException();
 					}
 					existing.reactivate(now);
+					reactivated[0] = true;
 					return existing;
 				})
 				.orElseGet(() -> new AccountantAccess(meiId, accountant.getId(), now));
 
 		try {
-			return AccountantAccessResponse.from(repository.saveAndFlush(access), accountant);
+			AccountantAccess saved = repository.saveAndFlush(access);
+			auditService.record(meiId, reactivated[0] ? AuditAction.UPDATE : AuditAction.CREATE,
+					AuditResourceType.ACCOUNTANT_ACCESS, saved.getId(), "granted accountantId=" + accountant.getId());
+			return AccountantAccessResponse.from(saved, accountant);
 		} catch (DataIntegrityViolationException ex) {
 			// Duas concessões simultâneas: a restrição única do banco decide.
 			throw new AccountantAccessAlreadyGrantedException();
@@ -85,6 +96,8 @@ public class AccountantAccessService {
 				.orElseThrow(() -> new ResourceNotFoundException("Acesso não encontrado."));
 		access.revoke(OffsetDateTime.now(clock));
 		repository.saveAndFlush(access);
+		auditService.record(meiId, AuditAction.DELETE, AuditResourceType.ACCOUNTANT_ACCESS, access.getId(),
+				"revoked accountantId=" + access.getAccountantId());
 	}
 
 	/**

@@ -38,13 +38,16 @@ class AccountantAccessServiceTest {
 	@Mock
 	private UserRepository userRepository;
 
+	@Mock
+	private br.com.finamei.audit.AuditService auditService;
+
 	private AccountantAccessService service;
 
 	private final UUID meiId = UUID.randomUUID();
 
 	@BeforeEach
 	void setUp() {
-		service = new AccountantAccessService(repository, userRepository, CLOCK);
+		service = new AccountantAccessService(repository, userRepository, CLOCK, auditService);
 	}
 
 	@Test
