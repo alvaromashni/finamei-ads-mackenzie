@@ -16,7 +16,7 @@ UPDATE users SET role = 'ADMIN' WHERE email = 'admin@seu-dominio.com';
 Em desenvolvimento local, com o Docker Compose do projeto:
 
 ```bash
-docker compose exec postgres psql -U <usuario> -d <banco> \
+docker compose exec db psql -U <usuario> -d <banco> \
   -c "UPDATE users SET role = 'ADMIN' WHERE email = 'admin@seu-dominio.com';"
 ```
 
