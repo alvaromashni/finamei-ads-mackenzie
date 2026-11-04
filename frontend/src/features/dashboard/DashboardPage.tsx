@@ -9,7 +9,7 @@ type DashboardPageProps = {
 }
 
 const actionBase =
-  'rounded-lg px-4 py-2 text-center font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700'
+  'rounded-lg px-4 py-2 text-center font-semibold touch:flex touch:min-h-11 touch:items-center touch:justify-center focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700'
 
 export function DashboardPage({ today = new Date() }: DashboardPageProps) {
   return (

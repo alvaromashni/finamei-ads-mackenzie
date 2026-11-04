@@ -4,6 +4,8 @@ A ONF08 pede que o FinaMEI funcione **nas duas versões mais recentes do Chrome,
 
 Tempo estimado: 20 a 30 minutos por navegador.
 
+O resultado do passe de responsividade feito em todas as telas (360 px, tablet e desktop) está em [`responsividade.md`](responsividade.md).
+
 ## 1. Preparar o ambiente
 
 Siga o [README](../README.md) para subir tudo na sua máquina:

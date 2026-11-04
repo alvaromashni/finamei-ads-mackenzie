@@ -138,7 +138,7 @@ export function LoginPage() {
           Ainda não tem conta?{' '}
           <Link
             to="/cadastro"
-            className="rounded font-semibold text-emerald-800 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+            className="rounded font-semibold text-emerald-800 touch:inline-flex touch:min-h-11 touch:items-center touch:px-1 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
           >
             Criar conta
           </Link>
