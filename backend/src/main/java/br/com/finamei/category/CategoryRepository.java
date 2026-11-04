@@ -17,6 +17,8 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     /** Modelos padrão, copiados para cada usuário no cadastro. */
     List<Category> findByUserIdIsNull();
 
+    long countByUserId(UUID userId);
+
     boolean existsByUserIdAndTypeAndNameIgnoreCase(UUID userId, TransactionType type, String name);
 
     boolean existsByUserIdAndTypeAndNameIgnoreCaseAndIdNot(UUID userId, TransactionType type, String name, UUID id);

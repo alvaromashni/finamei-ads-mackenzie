@@ -1,6 +1,7 @@
 package br.com.finamei.category;
 
 import br.com.finamei.shared.error.CategoryAlreadyExistsException;
+import br.com.finamei.shared.error.FieldValidationException;
 import br.com.finamei.shared.error.ResourceNotFoundException;
 import br.com.finamei.transaction.TransactionType;
 import java.util.List;
@@ -12,6 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 /** Categorias do usuário autenticado (OF10, RN07). O userId vem sempre do token. */
 @Service
 public class CategoryService {
+
+    /**
+     * Teto de categorias por usuário. A listagem de categorias não é paginada (o cliente precisa
+     * de todas para montar os seletores); este limite garante que ela nunca seja ilimitada.
+     * As categorias padrão são cerca de 20, então 200 não atrapalha o uso real.
+     */
+    static final int MAX_CATEGORIES_PER_USER = 200;
 
     private final CategoryRepository categoryRepository;
 
@@ -45,6 +53,10 @@ public class CategoryService {
         String trimmed = name.trim();
         if (categoryRepository.existsByUserIdAndTypeAndNameIgnoreCase(userId, type, trimmed)) {
             throw new CategoryAlreadyExistsException();
+        }
+        if (categoryRepository.countByUserId(userId) >= MAX_CATEGORIES_PER_USER) {
+            throw new FieldValidationException(
+                    "name", "Limite de " + MAX_CATEGORIES_PER_USER + " categorias atingido. Exclua ou reutilize uma existente.");
         }
         try {
             return CategoryResponse.from(categoryRepository.saveAndFlush(new Category(userId, trimmed, type)));

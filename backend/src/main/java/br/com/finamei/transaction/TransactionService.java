@@ -106,18 +106,17 @@ public class TransactionService {
     /** Saldo atual e entradas e saídas do mês. Despesas reduzem o saldo, mas não o faturamento (RN04). */
     @Transactional(readOnly = true)
     public BalanceSummaryResponse summary(UUID userId, YearMonth month) {
-        BigDecimal totalIncome = sum(transactionRepository.sumAmountByUserAndType(userId, TransactionType.INCOME));
-        BigDecimal totalExpense = sum(transactionRepository.sumAmountByUserAndType(userId, TransactionType.EXPENSE));
+        // Uma única consulta agregada (antes eram quatro) devolve o total geral e o do mês por tipo.
+        Map<TransactionType, TypeTotals> totals = transactionRepository
+                .totalsByType(userId, month.atDay(1), month.atEndOfMonth()).stream()
+                .collect(Collectors.toMap(TypeTotals::type, Function.identity()));
+        TypeTotals income = totals.getOrDefault(TransactionType.INCOME, TypeTotals.EMPTY_INCOME);
+        TypeTotals expense = totals.getOrDefault(TransactionType.EXPENSE, TypeTotals.EMPTY_EXPENSE);
         return new BalanceSummaryResponse(
                 month,
-                totalIncome.subtract(totalExpense),
-                sumOfMonth(userId, TransactionType.INCOME, month),
-                sumOfMonth(userId, TransactionType.EXPENSE, month));
-    }
-
-    private BigDecimal sumOfMonth(UUID userId, TransactionType type, YearMonth month) {
-        return sum(transactionRepository.sumAmountByUserAndTypeAndPeriod(
-                userId, type, month.atDay(1), month.atEndOfMonth()));
+                sum(income.total()).subtract(sum(expense.total())),
+                sum(income.monthTotal()),
+                sum(expense.monthTotal()));
     }
 
     private static BigDecimal sum(BigDecimal value) {
