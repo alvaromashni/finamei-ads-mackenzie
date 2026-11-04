@@ -72,6 +72,9 @@ public class SecurityConfig {
 						.permitAll()
 						// RN11: só o MEI concede, lista e revoga acessos de contador.
 						.requestMatchers("/api/v1/accountant-access/**").hasRole("MEI")
+						// OF17: área do contador só para ACCOUNTANT e somente leitura (nenhum método de escrita).
+						.requestMatchers(HttpMethod.GET, "/api/v1/accountant/**").hasRole("ACCOUNTANT")
+						.requestMatchers("/api/v1/accountant/**").denyAll()
 						// ONF05: contador é somente leitura, nunca grava dados financeiros.
 						.requestMatchers(HttpMethod.POST, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
 						.requestMatchers(HttpMethod.PUT, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
