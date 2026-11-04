@@ -35,6 +35,27 @@ jobs:
         working-directory: backend
         run: ./mvnw --batch-mode --no-transfer-progress verify
 
+      - name: Show coverage summary
+        if: always()
+        working-directory: backend
+        run: |
+          if [ ! -f target/site/jacoco/jacoco.csv ]; then
+            echo "Relatório JaCoCo não gerado." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          awk -F, 'NR > 1 {
+            pkg = $2; sub(/^br\.com\.finamei\.?/, "", pkg); if (pkg == "") pkg = "(raiz)"
+            lm[pkg] += $8; lc[pkg] += $9; im[pkg] += $4; ic[pkg] += $5
+            tlm += $8; tlc += $9; tim += $4; tic += $5
+          }
+          END {
+            print "## Cobertura de testes (JaCoCo)\n"
+            printf "**Total: %.1f%% das linhas, %.1f%% das instruções** (mínimo exigido: 60%%)\n\n", 100 * tlc / (tlm + tlc), 100 * tic / (tim + tic)
+            print "| Pacote | Linhas | Instruções |"
+            print "|---|---|---|"
+            for (p in lm) printf "| %s | %.1f%% | %.1f%% |\n", p, 100 * lc[p] / (lm[p] + lc[p]), 100 * ic[p] / (im[p] + ic[p]) | "sort"
+          }' target/site/jacoco/jacoco.csv >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload JaCoCo coverage report
         if: always()
         uses: actions/upload-artifact@v4
