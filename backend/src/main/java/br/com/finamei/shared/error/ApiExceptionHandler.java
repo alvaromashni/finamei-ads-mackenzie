@@ -3,6 +3,7 @@ package br.com.finamei.shared.error;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -40,6 +41,13 @@ public class ApiExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(ErrorResponse.of("INVALID_CREDENTIALS", ex.getMessage()));
+	}
+
+	@ExceptionHandler(AccountLockedException.class)
+	public ResponseEntity<ErrorResponse> handleAccountLocked(AccountLockedException ex) {
+		return ResponseEntity.status(HttpStatus.LOCKED)
+				.header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()))
+				.body(ErrorResponse.of("ACCOUNT_LOCKED", ex.getMessage()));
 	}
 
 	@ExceptionHandler(AccountantAccessAlreadyGrantedException.class)
