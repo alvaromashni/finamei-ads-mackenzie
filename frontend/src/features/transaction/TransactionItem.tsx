@@ -42,7 +42,7 @@ export function TransactionItem({
 
   return (
     <li className={`py-3 ${isEditing ? 'bg-emerald-50/60' : ''}`}>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
         <div className="min-w-0">
           <p className="break-words font-medium text-slate-900">
             {transaction.description}

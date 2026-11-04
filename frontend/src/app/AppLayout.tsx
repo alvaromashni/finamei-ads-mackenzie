@@ -62,7 +62,7 @@ export function AppLayout() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-6">
           <Link
             to="/"
-            className={`rounded text-lg font-bold text-emerald-700 ${focusRing}`}
+            className={`rounded text-lg font-bold text-emerald-700 touch:inline-flex touch:min-h-11 touch:items-center ${focusRing}`}
           >
             FinaMEI
           </Link>
@@ -103,7 +103,7 @@ export function AppLayout() {
                   <NavLink
                     to={item.to}
                     className={({ isActive }) =>
-                      `block rounded-lg px-3 py-2 text-sm font-medium ${focusRing} ${
+                      `block rounded-lg px-3 py-2 text-sm font-medium touch:flex touch:min-h-11 touch:items-center ${focusRing} ${
                         isActive
                           ? 'bg-emerald-50 text-emerald-800'
                           : 'text-slate-700 hover:bg-slate-100'

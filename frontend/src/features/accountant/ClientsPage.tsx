@@ -66,7 +66,7 @@ export function ClientsPage() {
                 <Link
                   to={`/clientes/${encodeURIComponent(client.id)}/relatorios`}
                   aria-label={`Ver relatórios de ${client.name}`}
-                  className="self-start rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+                  className="self-start rounded-lg touch:inline-flex touch:min-h-11 touch:items-center touch:justify-center bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
                 >
                   Ver relatórios
                 </Link>

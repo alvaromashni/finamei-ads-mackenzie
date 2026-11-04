@@ -1,5 +1,30 @@
 @import 'tailwindcss';
 
+/*
+ * Narrow screens (< 640px) or touch pointers (ONF08). Used with `touch:` on
+ * links, e.g. `touch:inline-flex touch:min-h-11 touch:items-center`.
+ */
+@custom-variant touch {
+  @media (max-width: 39.999rem), (pointer: coarse) {
+    @slot;
+  }
+}
+
+/*
+ * Touch targets of at least 44px on narrow screens and touch devices, so
+ * buttons and fields are easy to tap without changing the desktop layout.
+ */
+@layer base {
+  @media (max-width: 39.999rem), (pointer: coarse) {
+    button,
+    select,
+    textarea,
+    input:not([type='checkbox'], [type='radio'], [type='hidden']) {
+      min-height: 2.75rem;
+    }
+  }
+}
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: #0f172a;
