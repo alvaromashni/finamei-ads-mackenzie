@@ -58,6 +58,11 @@ public class User {
 		this.active = true;
 	}
 
+	public void updateProfile(String name, String email) {
+		this.name = name;
+		this.email = email;
+	}
+
 	@PrePersist
 	private void onCreate() {
 		OffsetDateTime now = OffsetDateTime.now();
