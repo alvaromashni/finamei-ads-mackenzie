@@ -57,6 +57,12 @@ public class ApiExceptionHandler {
 				.body(ErrorResponse.of("ACCOUNTANT_ACCESS_ALREADY_GRANTED", ex.getMessage()));
 	}
 
+	@ExceptionHandler(CannotDeactivateOwnAccountException.class)
+	public ResponseEntity<ErrorResponse> handleCannotDeactivateOwnAccount(CannotDeactivateOwnAccountException ex) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ErrorResponse.of("CANNOT_DEACTIVATE_OWN_ACCOUNT", ex.getMessage()));
+	}
+
 	@ExceptionHandler(CategoryAlreadyExistsException.class)
 	public ResponseEntity<ErrorResponse> handleCategoryAlreadyExists(CategoryAlreadyExistsException ex) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)

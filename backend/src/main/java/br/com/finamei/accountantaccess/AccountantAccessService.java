@@ -110,6 +110,12 @@ public class AccountantAccessService {
 		return repository.existsByMeiIdAndAccountantIdAndRevokedAtIsNull(meiId, accountantId);
 	}
 
+	/** Acessos ativos do contador (cliente e data da concessão), do mais antigo ao mais recente. */
+	@Transactional(readOnly = true)
+	public List<AccountantAccess> findActiveGrants(UUID accountantId) {
+		return repository.findByAccountantIdAndRevokedAtIsNullOrderByGrantedAtAsc(accountantId);
+	}
+
 	/** Ids dos MEIs que concederam acesso ativo ao contador (base da lista de clientes, #33). */
 	@Transactional(readOnly = true)
 	public List<UUID> findActiveClientIds(UUID accountantId) {

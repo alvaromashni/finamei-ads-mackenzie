@@ -34,6 +34,8 @@
 		     O perfil load-test os liga: ./mvnw test -Pload-test -->
 		<test.excludedGroups>load</test.excludedGroups>
 		<test.groups></test.groups>
+		<openpdf.version>3.0.5</openpdf.version>
+		<poi.version>6.0.0</poi.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -72,6 +74,16 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.librepdf</groupId>
+			<artifactId>openpdf</artifactId>
+			<version>${openpdf.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>${poi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>

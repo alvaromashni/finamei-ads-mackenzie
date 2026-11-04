@@ -38,7 +38,7 @@ Um repositório único, dois times (back e front), integrados por um contrato de
 | Autenticação | JWT (jjwt) + Spring Security | Token stateless, conforme ONF04. Access token curto (ex: 30 min, alinhado ao ONF04) — sem refresh token para manter simples no MVP. |
 | Hash de senha | BCrypt (Spring Security `PasswordEncoder`, fator de custo 10) | Exigido por ONF03. |
 | Validação | Jakarta Bean Validation (`@Valid`, `@NotNull`, `@DecimalMin` etc.) | Aplica RN06 (valor > 0, 2 casas decimais, data não futura, descrição ≤ 120 chars) direto nos DTOs. |
-| Exportação de relatório | Apache POI (planilha) + OpenPDF (PDF) | Bibliotecas locais, sem chamada a serviço externo — atende OF16. |
+| Exportação de relatório | Apache POI (planilha) + OpenPDF (PDF) | Bibliotecas locais, sem chamada a serviço externo — atende OF16. Versões: OpenPDF 3.0.5 (licença LGPL 2.1 / MPL 2.0, escolhida no lugar do iText/AGPL por ser compatível com projeto acadêmico aberto; pacote `org.openpdf`, que também traz o parser usado nos testes) e Apache POI `poi-ooxml` 6.0.0 (Apache 2.0). Endpoints: `GET /api/v1/reports/export` e `GET /api/v1/accountant/clients/{id}/reports/export` (`format=PDF\|XLSX`). A planilha lista no máximo 20.000 lançamentos (leitura paginada); os consolidados sempre incluem todos. |
 | Testes | JUnit 5 + Mockito + Spring Boot Test | Cobertura mínima de 60% das regras de negócio (ONF11). |
 | Banco em teste | H2 em memória (perfil `test`) | Evita depender de Postgres/Testcontainers na CI — mais simples, mais rápido. |
 | Cobertura | JaCoCo | Gera relatório de cobertura para acompanhar a meta do ONF11. |

@@ -11,6 +11,8 @@ public interface AccountantAccessRepository extends JpaRepository<AccountantAcce
 
 	List<AccountantAccess> findByAccountantIdAndRevokedAtIsNull(UUID accountantId);
 
+	List<AccountantAccess> findByAccountantIdAndRevokedAtIsNullOrderByGrantedAtAsc(UUID accountantId);
+
 	Optional<AccountantAccess> findByMeiIdAndAccountantId(UUID meiId, UUID accountantId);
 
 	Optional<AccountantAccess> findByIdAndMeiIdAndRevokedAtIsNull(UUID id, UUID meiId);
