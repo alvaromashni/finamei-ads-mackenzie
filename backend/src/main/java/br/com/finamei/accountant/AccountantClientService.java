@@ -3,6 +3,9 @@ package br.com.finamei.accountant;
 import br.com.finamei.accountant.dto.LinkedClientResponse;
 import br.com.finamei.accountantaccess.AccountantAccess;
 import br.com.finamei.accountantaccess.AccountantAccessService;
+import br.com.finamei.report.ExportedReport;
+import br.com.finamei.report.ReportExportFormat;
+import br.com.finamei.report.ReportExportService;
 import br.com.finamei.report.ReportPeriod;
 import br.com.finamei.report.ReportService;
 import br.com.finamei.report.dto.ReportResponse;
@@ -23,12 +26,15 @@ public class AccountantClientService {
 	private final AccountantAccessService accessService;
 	private final UserRepository userRepository;
 	private final ReportService reportService;
+	private final ReportExportService exportService;
 
 	public AccountantClientService(
-			AccountantAccessService accessService, UserRepository userRepository, ReportService reportService) {
+			AccountantAccessService accessService, UserRepository userRepository, ReportService reportService,
+			ReportExportService exportService) {
 		this.accessService = accessService;
 		this.userRepository = userRepository;
 		this.reportService = reportService;
+		this.exportService = exportService;
 	}
 
 	/** Clientes com acesso ativo, em duas consultas (acessos e usuários), sem N+1. */
@@ -58,5 +64,15 @@ public class AccountantClientService {
 			throw new AccessDeniedException("Sem acesso ativo ao cliente.");
 		}
 		return reportService.generate(clientId, period, year, month);
+	}
+
+	/** Exportação do relatório do cliente (OF16); mesma checagem de vínculo do relatório. */
+	public ExportedReport exportClientReport(
+			UUID accountantId, UUID clientId, ReportPeriod period, int year, Integer month,
+			ReportExportFormat format) {
+		if (!accessService.hasActiveAccess(accountantId, clientId)) {
+			throw new AccessDeniedException("Sem acesso ativo ao cliente.");
+		}
+		return exportService.export(clientId, period, year, month, format);
 	}
 }

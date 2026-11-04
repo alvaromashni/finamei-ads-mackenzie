@@ -16,8 +16,22 @@ public class ReportController {
 
 	private final ReportService reportService;
 
-	public ReportController(ReportService reportService) {
+	private final ReportExportService exportService;
+
+	public ReportController(ReportService reportService, ReportExportService exportService) {
 		this.reportService = reportService;
+		this.exportService = exportService;
+	}
+
+	/** Download do relatório em PDF ou XLSX; formato desconhecido responde 400. */
+	@GetMapping("/export")
+	public ResponseEntity<byte[]> export(
+			@AuthenticationPrincipal UUID userId,
+			@RequestParam ReportPeriod period,
+			@RequestParam int year,
+			@RequestParam(required = false) Integer month,
+			@RequestParam ReportExportFormat format) {
+		return exportService.export(userId, period, year, month, format).toResponse();
 	}
 
 	@GetMapping
