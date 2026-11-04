@@ -1,5 +1,8 @@
 package br.com.finamei.transaction;
 
+import br.com.finamei.audit.AuditAction;
+import br.com.finamei.audit.AuditResourceType;
+import br.com.finamei.audit.AuditService;
 import br.com.finamei.category.Category;
 import br.com.finamei.category.CategoryRepository;
 import br.com.finamei.shared.PageResponse;
@@ -36,14 +39,17 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
     private final Clock clock;
+    private final AuditService auditService;
 
     public TransactionService(
             TransactionRepository transactionRepository,
             CategoryRepository categoryRepository,
-            Clock clock) {
+            Clock clock,
+            AuditService auditService) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.clock = clock;
+        this.auditService = auditService;
     }
 
     /** O userId vem da identidade autenticada; o cliente nunca informa o dono do lançamento. */
@@ -59,6 +65,8 @@ public class TransactionService {
                 request.amount(),
                 request.date(),
                 request.description().trim()));
+        auditService.record(userId, AuditAction.CREATE, AuditResourceType.TRANSACTION,
+                transaction.getId(), describe(transaction));
         return TransactionResponse.from(transaction, category);
     }
 
@@ -71,6 +79,7 @@ public class TransactionService {
         Transaction transaction = findActiveOwned(userId, transactionId);
         validateDate(request);
         Category category = validCategoryFor(userId, request, transaction.getCategoryId());
+        String before = describe(transaction);
 
         transaction.update(
                 category.getId(),
@@ -78,13 +87,24 @@ public class TransactionService {
                 request.amount(),
                 request.date(),
                 request.description().trim());
+        auditService.record(userId, AuditAction.UPDATE, AuditResourceType.TRANSACTION,
+                transaction.getId(), "before[" + before + "] after[" + describe(transaction) + "]");
         return TransactionResponse.from(transaction, category);
     }
 
     /** Exclusão lógica (RN08): o lançamento sai da lista, do saldo e do faturamento. */
     @Transactional
     public void delete(UUID userId, UUID transactionId) {
-        findActiveOwned(userId, transactionId).markAsDeleted();
+        Transaction transaction = findActiveOwned(userId, transactionId);
+        transaction.markAsDeleted();
+        auditService.record(userId, AuditAction.DELETE, AuditResourceType.TRANSACTION,
+                transaction.getId(), describe(transaction));
+    }
+
+    // So valores de negocio para rastreio; a descricao e texto livre do usuario e fica de fora.
+    private static String describe(Transaction transaction) {
+        return "type=" + transaction.getType() + ", amount=" + transaction.getAmount()
+                + ", date=" + transaction.getTransactionDate() + ", categoryId=" + transaction.getCategoryId();
     }
 
     @Transactional(readOnly = true)

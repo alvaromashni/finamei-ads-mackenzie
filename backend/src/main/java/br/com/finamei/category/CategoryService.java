@@ -1,5 +1,8 @@
 package br.com.finamei.category;
 
+import br.com.finamei.audit.AuditAction;
+import br.com.finamei.audit.AuditResourceType;
+import br.com.finamei.audit.AuditService;
 import br.com.finamei.shared.error.CategoryAlreadyExistsException;
 import br.com.finamei.shared.error.ResourceNotFoundException;
 import br.com.finamei.transaction.TransactionType;
@@ -15,8 +18,11 @@ public class CategoryService {
 
     private final CategoryRepository categoryRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    private final AuditService auditService;
+
+    public CategoryService(CategoryRepository categoryRepository, AuditService auditService) {
         this.categoryRepository = categoryRepository;
+        this.auditService = auditService;
     }
 
     /**
@@ -47,7 +53,10 @@ public class CategoryService {
             throw new CategoryAlreadyExistsException();
         }
         try {
-            return CategoryResponse.from(categoryRepository.saveAndFlush(new Category(userId, trimmed, type)));
+            Category category = categoryRepository.saveAndFlush(new Category(userId, trimmed, type));
+            auditService.record(userId, AuditAction.CREATE, AuditResourceType.CATEGORY,
+                    category.getId(), "name=" + category.getName() + ", type=" + type);
+            return CategoryResponse.from(category);
         } catch (DataIntegrityViolationException ex) {
             // Mesmo nome criado em paralelo: a constraint única do banco decide.
             throw new CategoryAlreadyExistsException();
@@ -62,12 +71,15 @@ public class CategoryService {
                 userId, category.getType(), trimmed, categoryId)) {
             throw new CategoryAlreadyExistsException();
         }
+        String previousName = category.getName();
         category.rename(trimmed);
         try {
             categoryRepository.flush();
         } catch (DataIntegrityViolationException ex) {
             throw new CategoryAlreadyExistsException();
         }
+        auditService.record(userId, AuditAction.UPDATE, AuditResourceType.CATEGORY,
+                categoryId, "name: " + previousName + " -> " + trimmed);
         return CategoryResponse.from(category);
     }
 
@@ -80,6 +92,8 @@ public class CategoryService {
         } else {
             category.deactivate();
         }
+        auditService.record(userId, AuditAction.UPDATE, AuditResourceType.CATEGORY,
+                categoryId, "active=" + active);
         return CategoryResponse.from(category);
     }
 

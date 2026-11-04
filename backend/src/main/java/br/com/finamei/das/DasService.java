@@ -1,5 +1,8 @@
 package br.com.finamei.das;
 
+import br.com.finamei.audit.AuditAction;
+import br.com.finamei.audit.AuditResourceType;
+import br.com.finamei.audit.AuditService;
 import br.com.finamei.das.dto.DasGuideResponse;
 import br.com.finamei.shared.error.DasAlreadyPaidException;
 import br.com.finamei.shared.error.DasNotPaidException;
@@ -26,12 +29,14 @@ public class DasService {
 	private final DasDueDateCalculator dueDateCalculator;
 	private final Clock clock;
 	private final BigDecimal monthlyAmount;
+	private final AuditService auditService;
 
 	public DasService(
 			DasGuideRepository repository,
 			DasDueDateCalculator dueDateCalculator,
 			Clock clock,
-			@Value("${finamei.das.monthly-amount}") BigDecimal monthlyAmount) {
+			@Value("${finamei.das.monthly-amount}") BigDecimal monthlyAmount,
+			AuditService auditService) {
 		if (monthlyAmount.signum() <= 0) {
 			throw new IllegalArgumentException("finamei.das.monthly-amount must be greater than zero");
 		}
@@ -39,6 +44,7 @@ public class DasService {
 		this.dueDateCalculator = dueDateCalculator;
 		this.clock = clock;
 		this.monthlyAmount = monthlyAmount;
+		this.auditService = auditService;
 	}
 
 	/**
@@ -69,6 +75,8 @@ public class DasService {
 		}
 
 		guide.markAsPaid(paidAt);
+		auditService.record(userId, AuditAction.UPDATE, AuditResourceType.DAS_GUIDE, guide.getId(),
+				"paid competence=" + guide.getCompetence() + ", paidAt=" + paidAt);
 		return DasGuideResponse.from(guide, today);
 	}
 
@@ -80,6 +88,8 @@ public class DasService {
 			throw new DasNotPaidException();
 		}
 		guide.markAsUnpaid();
+		auditService.record(userId, AuditAction.UPDATE, AuditResourceType.DAS_GUIDE, guide.getId(),
+				"payment undone competence=" + guide.getCompetence());
 		return DasGuideResponse.from(guide, LocalDate.now(clock));
 	}
 
