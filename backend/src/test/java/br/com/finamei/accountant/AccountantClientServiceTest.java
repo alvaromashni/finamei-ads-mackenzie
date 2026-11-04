@@ -33,13 +33,16 @@ class AccountantClientServiceTest {
 	@Mock
 	private ReportService reportService;
 
+	@Mock
+	private br.com.finamei.report.ReportExportService exportService;
+
 	private AccountantClientService service;
 	private final UUID accountantId = UUID.randomUUID();
 	private final UUID clientId = UUID.randomUUID();
 
 	@BeforeEach
 	void setUp() {
-		service = new AccountantClientService(accessService, userRepository, reportService);
+		service = new AccountantClientService(accessService, userRepository, reportService, exportService);
 	}
 
 	@Test
@@ -69,5 +72,27 @@ class AccountantClientServiceTest {
 
 		assertThat(service.listClients(accountantId)).isEmpty();
 		verify(accessService).findActiveGrants(accountantId);
+	}
+
+	@Test
+	void deveExportarRelatorioDoClienteQuandoHaVinculoAtivo() {
+		var esperado = new br.com.finamei.report.ExportedReport(new byte[] {1}, "relatorio-2026.pdf", "application/pdf");
+		when(accessService.hasActiveAccess(accountantId, clientId)).thenReturn(true);
+		when(exportService.export(clientId, ReportPeriod.ANNUAL, 2026, null, br.com.finamei.report.ReportExportFormat.PDF))
+				.thenReturn(esperado);
+
+		assertThat(service.exportClientReport(
+				accountantId, clientId, ReportPeriod.ANNUAL, 2026, null, br.com.finamei.report.ReportExportFormat.PDF))
+				.isSameAs(esperado);
+	}
+
+	@Test
+	void deveNegarExportacaoSemVinculoAtivoENuncaGerarOArquivo() {
+		when(accessService.hasActiveAccess(accountantId, clientId)).thenReturn(false);
+
+		assertThatThrownBy(() -> service.exportClientReport(
+				accountantId, clientId, ReportPeriod.ANNUAL, 2026, null, br.com.finamei.report.ReportExportFormat.XLSX))
+				.isInstanceOf(AccessDeniedException.class);
+		org.mockito.Mockito.verifyNoInteractions(exportService);
 	}
 }

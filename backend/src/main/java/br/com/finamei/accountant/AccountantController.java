@@ -1,6 +1,7 @@
 package br.com.finamei.accountant;
 
 import br.com.finamei.accountant.dto.LinkedClientResponse;
+import br.com.finamei.report.ReportExportFormat;
 import br.com.finamei.report.ReportPeriod;
 import br.com.finamei.report.dto.ReportResponse;
 import java.util.List;
@@ -40,5 +41,16 @@ public class AccountantController {
 			@RequestParam int year,
 			@RequestParam(required = false) Integer month) {
 		return ResponseEntity.ok(service.getClientReport(accountantId, clientId, period, year, month));
+	}
+
+	@GetMapping("/clients/{clientId}/reports/export")
+	public ResponseEntity<byte[]> exportClientReport(
+			@AuthenticationPrincipal UUID accountantId,
+			@PathVariable UUID clientId,
+			@RequestParam ReportPeriod period,
+			@RequestParam int year,
+			@RequestParam(required = false) Integer month,
+			@RequestParam ReportExportFormat format) {
+		return service.exportClientReport(accountantId, clientId, period, year, month, format).toResponse();
 	}
 }

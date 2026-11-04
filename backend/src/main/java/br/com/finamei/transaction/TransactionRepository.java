@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -69,4 +71,24 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID>,
             @Param("type") TransactionType type,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end);
+
+    /**
+     * Lançamentos ativos do usuário no período (inclusive), em ordem estável (data, id), com o nome
+     * da categoria, para exportação. Paginado: quem exporta lê por páginas e impõe um teto de linhas.
+     */
+    @Query("""
+            select new br.com.finamei.transaction.ExportRow(
+                t.transactionDate, t.type, c.name, t.description, t.amount)
+            from Transaction t
+            left join Category c on c.id = t.categoryId
+            where t.userId = :userId
+              and t.deleted = false
+              and t.transactionDate between :start and :end
+            order by t.transactionDate, t.id
+            """)
+    Slice<ExportRow> findExportRows(
+            @Param("userId") UUID userId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end,
+            Pageable pageable);
 }
