@@ -18,7 +18,7 @@ Cada iteração entregue tem uma tag no repositório:
 | Tag | Conteúdo |
 |---|---|
 | [`v1`](../../tree/v1) | Iteração 1: cadastro e login, painel, lançamentos, categorias, DAS, faturamento e telas iniciais. |
-| `v2` | Iteração 2: perfil, acesso do contador, relatórios e exportação, auditoria, bloqueio de login, administrador, segurança, desempenho e testes. |
+| [`v2`](../../tree/v2) | Iteração 2: perfil, acesso do contador, relatórios e exportação, auditoria, bloqueio de login, administrador, segurança, desempenho e testes. |
 
 Para rodar uma iteração específica, troque para a tag dela antes de seguir os passos abaixo (ex.: `git checkout v1`).
 
