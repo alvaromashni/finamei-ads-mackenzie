@@ -19,6 +19,8 @@ Limitações: o banco dos testes é H2, não PostgreSQL (o Docker não estava di
 Contagem de instruções vale igual nos dois; tempos e planos são só indicativos e servem para comparar
 antes/depois no mesmo ambiente.
 
+Tempos de ponta a ponta por HTTP, com 10 mil lançamentos, em [`teste-de-carga.md`](teste-de-carga.md).
+
 ## Consultas mais usadas
 
 | Consulta | Endpoint |

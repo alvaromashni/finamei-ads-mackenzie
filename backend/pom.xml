@@ -30,6 +30,10 @@
 		<java.version>21</java.version>
 		<jjwt.version>0.13.0</jjwt.version>
 		<springdoc.version>3.1.1</springdoc.version>
+		<!-- Testes marcados com @Tag("load") (teste de carga, ONF06/ONF07) ficam fora do verify padrao.
+		     O perfil load-test os liga: ./mvnw test -Pload-test -->
+		<test.excludedGroups>load</test.excludedGroups>
+		<test.groups></test.groups>
 		<openpdf.version>3.0.5</openpdf.version>
 		<poi.version>6.0.0</poi.version>
 	</properties>
@@ -148,6 +152,14 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<excludedGroups>${test.excludedGroups}</excludedGroups>
+					<groups>${test.groups}</groups>
+				</configuration>
+			</plugin>
+			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.8.14</version>
@@ -203,5 +215,16 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<!-- Teste de carga leve (docs/teste-de-carga.md): so os testes com @Tag("load"). -->
+			<id>load-test</id>
+			<properties>
+				<test.excludedGroups>none</test.excludedGroups>
+				<test.groups>load</test.groups>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>
