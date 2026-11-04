@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -54,10 +55,17 @@ public class DasService {
 	@Transactional
 	public List<DasGuideResponse> listGuides(UUID userId, int year) {
 		LocalDate today = LocalDate.now(clock);
+		List<DasGuide> guides = findGuides(userId, year);
 		if (year == today.getYear()) {
-			createMissingGuides(userId, year);
+			List<DasGuide> created = createMissingGuides(userId, year, guides);
+			if (!created.isEmpty()) {
+				// Reaproveita a consulta já feita em vez de buscar tudo de novo.
+				guides = new ArrayList<>(guides);
+				guides.addAll(created);
+				guides.sort(Comparator.comparing(DasGuide::getCompetence));
+			}
 		}
-		return findGuides(userId, year).stream()
+		return guides.stream()
 				.map(guide -> DasGuideResponse.from(guide, today))
 				.toList();
 	}
@@ -98,8 +106,8 @@ public class DasService {
 				.orElseThrow(() -> new ResourceNotFoundException("Guia do DAS não encontrada."));
 	}
 
-	private void createMissingGuides(UUID userId, int year) {
-		Set<YearMonth> existing = findGuides(userId, year).stream()
+	private List<DasGuide> createMissingGuides(UUID userId, int year, List<DasGuide> current) {
+		Set<YearMonth> existing = current.stream()
 				.map(DasGuide::getCompetence)
 				.collect(Collectors.toSet());
 
@@ -110,7 +118,7 @@ public class DasService {
 				missing.add(new DasGuide(userId, competence, dueDateCalculator.dueDateOf(competence), monthlyAmount));
 			}
 		}
-		repository.saveAll(missing);
+		return repository.saveAll(missing);
 	}
 
 	private List<DasGuide> findGuides(UUID userId, int year) {

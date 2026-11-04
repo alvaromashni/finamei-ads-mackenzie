@@ -9,6 +9,12 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        # Inserções em lote (ex.: as 12 guias do DAS vão em uma instrução, não em doze).
+        # Sem order_inserts: as entidades referenciam umas às outras só por UUID (sem associações
+        # mapeadas), então reordenar inserts por tipo quebraria as chaves estrangeiras.
+        jdbc.batch_size: 25
   flyway:
     enabled: true
 
