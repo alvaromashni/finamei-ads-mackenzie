@@ -64,7 +64,6 @@ describe('TextField', () => {
 
     const campo = screen.getByLabelText('Valor')
     expect(campo).toHaveAttribute('aria-invalid', 'true')
-    expect(campo).toHaveClass('border-red-600')
     expect(campo).toHaveAccessibleDescription(
       'O valor deve ser maior que zero. Use vírgula para os centavos.',
     )

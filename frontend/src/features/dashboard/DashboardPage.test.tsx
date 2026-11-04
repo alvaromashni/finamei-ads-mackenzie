@@ -231,6 +231,26 @@ describe('DashboardPage', () => {
     )
   })
 
+  it('quando o faturamento chega exatamente ao limite, não fala em excedente de R$ 0,00 (RN02)', async () => {
+    mockApi({
+      revenue: () =>
+        jsonResponse(200, {
+          ...faturamentoNormal,
+          accumulated: 81000,
+          percentage: 100,
+          band: 'EXCEEDED',
+          proportionalLimit: false,
+          activeMonths: null,
+        }),
+    })
+    renderPage()
+
+    const alerta = await screen.findByRole('alert')
+    expect(alerta).toHaveTextContent('você atingiu 100% do limite anual')
+    expect(alerta).toHaveTextContent('Procure seu contador')
+    expect(alerta).not.toHaveTextContent('R$ 0,00')
+  })
+
   it('sinaliza quando o limite é proporcional aos meses de atividade (RN01)', async () => {
     mockApi({
       revenue: () =>
