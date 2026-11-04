@@ -26,6 +26,10 @@ function getAlertMessage(
     case 'CRITICAL':
       return `Faixa crítica: você já atingiu ${percentage}% do limite anual. Margem restante: ${formatCurrency(remaining)}. Acompanhe de perto os próximos recebimentos.`
     case 'EXCEEDED':
+      // RN02 classifies >= 100% as exceeded, so the amount can be exactly the limit.
+      if (excess === 0) {
+        return `Limite atingido: você atingiu 100% do limite anual e não há margem restante. Novos recebimentos passam do limite. Procure seu contador para avaliar o desenquadramento do MEI.`
+      }
       return `Limite excedido: seu faturamento passou o limite em ${formatCurrency(excess)}. Procure seu contador para avaliar o desenquadramento do MEI.`
   }
 }
