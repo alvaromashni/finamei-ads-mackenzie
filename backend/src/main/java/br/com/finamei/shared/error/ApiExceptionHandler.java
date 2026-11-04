@@ -48,6 +48,12 @@ public class ApiExceptionHandler {
 				.body(ErrorResponse.of("CATEGORY_ALREADY_EXISTS", ex.getMessage()));
 	}
 
+	@ExceptionHandler(CategoryInUseException.class)
+	public ResponseEntity<ErrorResponse> handleCategoryInUse(CategoryInUseException ex) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ErrorResponse.of("CATEGORY_IN_USE", ex.getMessage()));
+	}
+
 	@ExceptionHandler(DasAlreadyPaidException.class)
 	public ResponseEntity<ErrorResponse> handleDasAlreadyPaid(DasAlreadyPaidException ex) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)

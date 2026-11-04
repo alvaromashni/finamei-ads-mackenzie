@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -59,5 +60,12 @@ public class CategoryController {
             @PathVariable UUID id,
             @Valid @RequestBody UpdateCategoryStatusRequest request) {
         return ResponseEntity.ok(categoryService.setActive(userId, id, request.active()));
+    }
+
+    /** Exclui só categoria sem lançamentos; com lançamentos, responde 409 e o caminho é inativar (RN07). */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@AuthenticationPrincipal UUID userId, @PathVariable UUID id) {
+        categoryService.delete(userId, id);
+        return ResponseEntity.noContent().build();
     }
 }

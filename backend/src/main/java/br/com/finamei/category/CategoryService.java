@@ -1,7 +1,9 @@
 package br.com.finamei.category;
 
 import br.com.finamei.shared.error.CategoryAlreadyExistsException;
+import br.com.finamei.shared.error.CategoryInUseException;
 import br.com.finamei.shared.error.ResourceNotFoundException;
+import br.com.finamei.transaction.TransactionRepository;
 import br.com.finamei.transaction.TransactionType;
 import java.util.List;
 import java.util.UUID;
@@ -14,9 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final TransactionRepository transactionRepository;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, TransactionRepository transactionRepository) {
         this.categoryRepository = categoryRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     /**
@@ -81,6 +85,25 @@ public class CategoryService {
             category.deactivate();
         }
         return CategoryResponse.from(category);
+    }
+
+    /**
+     * Exclui uma categoria que nunca foi usada. Com lançamentos vinculados, inclusive os excluídos
+     * logicamente, só é possível inativá-la (RN07).
+     */
+    @Transactional
+    public void delete(UUID userId, UUID categoryId) {
+        Category category = findOwned(userId, categoryId);
+        if (transactionRepository.existsByCategoryId(categoryId)) {
+            throw new CategoryInUseException();
+        }
+        categoryRepository.delete(category);
+        try {
+            categoryRepository.flush();
+        } catch (DataIntegrityViolationException ex) {
+            // Lançamento criado em paralelo: a chave estrangeira do banco decide.
+            throw new CategoryInUseException();
+        }
     }
 
     // Categoria de outro usuário responde 404, sem revelar que existe (ONF05).

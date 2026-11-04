@@ -11,6 +11,9 @@ import org.springframework.data.repository.query.Param;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID>, JpaSpecificationExecutor<Transaction> {
 
+    /** Há algum lançamento, inclusive excluído logicamente, vinculado à categoria? (RN07) */
+    boolean existsByCategoryId(UUID categoryId);
+
     /** Lançamento ativo (não excluído, RN08) que pertence ao usuário. */
     Optional<Transaction> findByIdAndUserIdAndDeletedFalse(UUID id, UUID userId);
 
