@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +24,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
 	private static final int BCRYPT_STRENGTH = 10;
+
+	/** Dados financeiros do MEI: lançamentos, categorias e guias DAS. */
+	private static final String[] FINANCIAL_PATHS = {
+			"/api/v1/transactions/**", "/api/v1/categories/**", "/api/v1/das/**"
+	};
 
 	@Bean
 	PasswordEncoder passwordEncoder() {
@@ -64,6 +70,13 @@ public class SecurityConfig {
 								"/swagger-ui/**",
 								"/api/v1/auth/**")
 						.permitAll()
+						// RN11: só o MEI concede, lista e revoga acessos de contador.
+						.requestMatchers("/api/v1/accountant-access/**").hasRole("MEI")
+						// ONF05: contador é somente leitura, nunca grava dados financeiros.
+						.requestMatchers(HttpMethod.POST, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
+						.requestMatchers(HttpMethod.PUT, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
+						.requestMatchers(HttpMethod.PATCH, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
+						.requestMatchers(HttpMethod.DELETE, FINANCIAL_PATHS).hasAnyRole("MEI", "ADMIN")
 						.anyRequest().authenticated())
 				.addFilterBefore(new JwtAuthenticationFilter(jwtService), UsernamePasswordAuthenticationFilter.class)
 				.build();

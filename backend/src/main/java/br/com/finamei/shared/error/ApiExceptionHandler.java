@@ -42,6 +42,13 @@ public class ApiExceptionHandler {
 				.body(ErrorResponse.of("INVALID_CREDENTIALS", ex.getMessage()));
 	}
 
+	@ExceptionHandler(AccountantAccessAlreadyGrantedException.class)
+	public ResponseEntity<ErrorResponse> handleAccountantAccessAlreadyGranted(
+			AccountantAccessAlreadyGrantedException ex) {
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(ErrorResponse.of("ACCOUNTANT_ACCESS_ALREADY_GRANTED", ex.getMessage()));
+	}
+
 	@ExceptionHandler(CategoryAlreadyExistsException.class)
 	public ResponseEntity<ErrorResponse> handleCategoryAlreadyExists(CategoryAlreadyExistsException ex) {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
