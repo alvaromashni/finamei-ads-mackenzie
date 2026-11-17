@@ -43,7 +43,7 @@ public class SecurityConfig {
 		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 		// Sem isto o navegador esconde o nome do arquivo exportado (OF16) do frontend em outra origem.
-		configuration.setExposedHeaders(List.of("Content-Disposition"));
+		configuration.setExposedHeaders(List.of("Content-Disposition", "X-Renewed-Token"));
 		configuration.setMaxAge(3600L);
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

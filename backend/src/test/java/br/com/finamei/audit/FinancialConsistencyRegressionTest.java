@@ -113,18 +113,19 @@ class FinancialConsistencyRegressionTest {
 	}
 
 	@Test
-	void auditoriaNaoMisturaUsuariosEEscritasRecusadasNaoGeramRegistro() throws Exception {
+	void auditoriaNaoMisturaUsuariosERegistraTentativaNegada() throws Exception {
 		String lancamentoDaMaria = criar(maria, "INCOME", "100.00", "2026-09-03", receita);
-		long antesDoJoao = auditLogRepository.countByActorUserId(joao.getId());
 
-		// Tentativas inválidas ou de outro usuário: nenhuma pode deixar rastro de escrita.
-		editar(joao, lancamentoDaMaria, "INCOME", "1.00", "2026-09-03", receita).andExpect(status().isNotFound());
-		excluir(joao, lancamentoDaMaria).andExpect(status().isNotFound());
+		// Lançamento de outra pessoa: 403 e um registro DENY, sem alterar o dado.
+		editar(joao, lancamentoDaMaria, "INCOME", "1.00", "2026-09-03", receita).andExpect(status().isForbidden());
+		excluir(joao, lancamentoDaMaria).andExpect(status().isForbidden());
 		criarResposta(maria, "INCOME", "-5", "2026-09-03", receita).andExpect(status().isBadRequest());
 		criarResposta(maria, "INCOME", "5", "2026-12-25", receita).andExpect(status().isBadRequest());
 		excluir(maria, UUID.randomUUID().toString()).andExpect(status().isNotFound());
 
-		assertThat(auditLogRepository.countByActorUserId(joao.getId())).isEqualTo(antesDoJoao).isZero();
+		assertThat(auditLogRepository.findByActorUserIdOrderByOccurredAtAsc(joao.getId()))
+				.extracting(AuditLog::getAction)
+				.containsExactly(AuditAction.DENY, AuditAction.DENY);
 		assertThat(auditLogRepository.countByActorUserId(maria.getId())).isEqualTo(1);
 
 		excluir(maria, lancamentoDaMaria).andExpect(status().isNoContent());

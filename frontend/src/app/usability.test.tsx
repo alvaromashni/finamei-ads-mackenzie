@@ -118,7 +118,7 @@ describe('sessão expirada', () => {
       screen.getByRole('heading', { name: 'Entrar no FinaMEI' }),
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/Sua sessão expirou por segurança\./),
+      screen.getByText('Sua sessão expirou. Entre novamente para continuar.'),
     ).toBeInTheDocument()
   })
 
@@ -133,7 +133,9 @@ describe('sessão expirada', () => {
     renderApp('/painel', logada)
 
     expect(
-      await screen.findByText(/Sua sessão expirou por segurança\./),
+      await screen.findByText(
+        'Sua sessão expirou. Entre novamente para continuar.',
+      ),
     ).toBeInTheDocument()
   })
 

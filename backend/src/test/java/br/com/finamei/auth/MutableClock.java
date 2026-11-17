@@ -19,6 +19,10 @@ class MutableClock extends Clock {
 		instant = instant.plus(duration);
 	}
 
+	void set(Instant instant) {
+		this.instant = instant;
+	}
+
 	@Override
 	public ZoneId getZone() {
 		return ZoneOffset.UTC;

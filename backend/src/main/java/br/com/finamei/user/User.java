@@ -41,6 +41,14 @@ public class User {
 	@Column(name = "mei_opening_date")
 	private LocalDate meiOpeningDate;
 
+	/** Momento do último login bem-sucedido. Nulo até o primeiro acesso. */
+	@Column(name = "last_access_at")
+	private OffsetDateTime lastAccessAt;
+
+	/** Incrementado na troca de senha. Tokens com outra versão deixam de valer (RN10). */
+	@Column(name = "session_version", nullable = false)
+	private int sessionVersion;
+
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private OffsetDateTime createdAt;
 
@@ -51,16 +59,37 @@ public class User {
 	}
 
 	public User(String name, String email, String passwordHash) {
+		this(name, email, passwordHash, Role.MEI);
+	}
+
+	public User(String name, String email, String passwordHash, Role role) {
 		this.name = name;
 		this.email = email;
 		this.passwordHash = passwordHash;
-		this.role = Role.MEI;
+		this.role = role == null ? Role.MEI : role;
 		this.active = true;
 	}
 
 	public void updateProfile(String name, String email) {
 		this.name = name;
 		this.email = email;
+	}
+
+	public void changeMeiOpeningDate(LocalDate meiOpeningDate) {
+		this.meiOpeningDate = meiOpeningDate;
+	}
+
+	public void changePassword(String passwordHash) {
+		this.passwordHash = passwordHash;
+	}
+
+	public void recordAccess(OffsetDateTime when) {
+		this.lastAccessAt = when;
+	}
+
+	/** Encerra as sessões já emitidas (RN10). O próximo token sai com a nova versão. */
+	public void invalidateSessions() {
+		this.sessionVersion++;
 	}
 
 	public void changeActive(boolean active) {
@@ -105,6 +134,14 @@ public class User {
 
 	public LocalDate getMeiOpeningDate() {
 		return meiOpeningDate;
+	}
+
+	public OffsetDateTime getLastAccessAt() {
+		return lastAccessAt;
+	}
+
+	public int getSessionVersion() {
+		return sessionVersion;
 	}
 
 	public OffsetDateTime getCreatedAt() {

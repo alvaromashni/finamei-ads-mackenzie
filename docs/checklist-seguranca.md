@@ -34,7 +34,7 @@ Os testes citados ficam em `backend/src/test/java/br/com/finamei/`. O teste cons
 | Token expirado rejeitado (401) | `JwtServiceTest.deveRejeitarTokenExpirado`; `DataIsolationTest.tokenExpiradoRecebe401`. | OK |
 | Teste de expiração realmente testa a expiração | `SecurityFilterChainTest.deveRejeitarAcessoComTokenExpirado` cria o token expirado com um segredo diferente do da aplicação, então passa por assinatura inválida, não por expiração. O novo `DataIsolationTest.tokenExpiradoRecebe401` usa o segredo real. | Corrigido neste PR (teste novo; o antigo foi mantido) |
 | Requisição sem token → 401 | `SecurityFilterChainTest`; `DataIsolationTest.requisicaoSemTokenRecebe401EmTodosOsModulos` (transações, categorias, DAS, contador, perfil, faturamento). | OK |
-| Sessão absoluta, não deslizante | A janela de 30 min conta do login (sem refresh token), conforme `docs/tech-stack.md`. O frontend derruba a sessão ao expirar (`AuthProvider`). | Pendente: decisão do MVP; inatividade estrita exigiria reemissão de token |
+| Sessão por inatividade de 30 min (ONF04) | O filtro reemite o JWT no cabeçalho `X-Renewed-Token` depois do primeiro minuto de uso. O frontend troca o token guardado e zera o prazo. Sem uso, a sessão cai e a tela de login mostra "Sua sessão expirou. Entre novamente para continuar." | OK |
 | Token continua válido após desativar o usuário | `JwtAuthenticationFilter` não consulta o banco; um token emitido vale até expirar (no máximo 30 min). O sistema não tem fluxo de desativação de conta. | Pendente: baixo risco, dependeria de consulta por requisição |
 | Token no navegador | Fica em `sessionStorage` (`AuthProvider`): some ao fechar a aba, mas é acessível a XSS. Não há `dangerouslySetInnerHTML`. | OK com ressalva: cookie `HttpOnly` seria mais forte, mudança grande fora do escopo |
 
@@ -53,7 +53,7 @@ O dono do recurso sempre vem do token (`@AuthenticationPrincipal UUID`), nunca d
 
 | Recurso | Cenário | Teste | Resultado |
 |---|---|---|---|
-| Lançamentos | B edita/exclui lançamento de A → 404, dado intacto | `DataIsolationTest.usuarioBNaoAlteraNemExcluiLancamentoDoUsuarioA`; `TransactionEditDeleteFilterTest.naoDeveEditarLancamentoDeOutroUsuarioNemExcluido` | OK |
+| Lançamentos | B edita/exclui lançamento de A → 403 `ACCESS_DENIED` ("Você não tem permissão para acessar este recurso."), dado intacto, tentativa em `audit_logs` com ação `DENY` | `DataIsolationTest.usuarioBNaoAlteraNemExcluiLancamentoDoUsuarioA`; `TransactionEditDeleteFilterTest.naoDeveEditarLancamentoDeOutroUsuarioNemExcluido` | OK |
 | Lançamentos | B lista lançamentos, saldo e faturamento de A → vazio/zero | `DataIsolationTest.usuarioBNaoVeLancamentosNemSaldoDoUsuarioA` | OK |
 | Lançamentos | B lança com categoria de A → 400 (categoria inexistente para B), nada é criado | `DataIsolationTest.usuarioBNaoLancaUsandoCategoriaDoUsuarioA` | OK |
 | Categorias | B renomeia/inativa categoria de A → 404 | `DataIsolationTest.usuarioBNaoRenomeiaNemInativaCategoriaDoUsuarioA`; `CategoryControllerTest.naoDevePermitirAlterarCategoriaDeOutroUsuario` | OK |

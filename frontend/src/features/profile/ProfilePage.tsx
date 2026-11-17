@@ -36,7 +36,13 @@ export function ProfilePage() {
     resolver: zodResolver(profileSchema),
     // Preenche com os dados do servidor e mantém o que o usuário já editou
     // caso a consulta seja atualizada em segundo plano.
-    values: profile ? { name: profile.name, email: profile.email } : undefined,
+    values: profile
+      ? {
+          name: profile.name,
+          email: profile.email,
+          meiOpeningDate: profile.meiOpeningDate ?? '',
+        }
+      : undefined,
     resetOptions: { keepDirtyValues: true },
   })
 
@@ -44,26 +50,38 @@ export function ProfilePage() {
     setFormError(null)
     setSuccessMessage(null)
 
-    mutation.mutate(values, {
-      onSuccess: (updated) => {
-        reset({ name: updated.name, email: updated.email })
-        setSuccessMessage('Perfil atualizado com sucesso.')
+    mutation.mutate(
+      {
+        name: values.name,
+        email: values.email,
+        meiOpeningDate: values.meiOpeningDate || null,
+        clearMeiOpeningDate: values.meiOpeningDate === '',
       },
-      onError: (error) => {
-        if (error instanceof HttpError && error.status === 409) {
-          setError(
-            'email',
-            { message: EMAIL_CONFLICT_MESSAGE },
-            { shouldFocus: true },
-          )
-          return
-        }
+      {
+        onSuccess: (updated) => {
+          reset({
+            name: updated.name,
+            email: updated.email,
+            meiOpeningDate: updated.meiOpeningDate ?? '',
+          })
+          setSuccessMessage('Perfil atualizado com sucesso.')
+        },
+        onError: (error) => {
+          if (error instanceof HttpError && error.status === 409) {
+            setError(
+              'email',
+              { message: EMAIL_CONFLICT_MESSAGE },
+              { shouldFocus: true },
+            )
+            return
+          }
 
-        if (!applyApiFieldErrors(error, PROFILE_FIELDS, setError)) {
-          setFormError(getApiErrorMessage(error))
-        }
+          if (!applyApiFieldErrors(error, PROFILE_FIELDS, setError)) {
+            setFormError(getApiErrorMessage(error))
+          }
+        },
       },
-    })
+    )
   })
 
   return (
@@ -144,11 +162,27 @@ export function ProfilePage() {
               })}
             />
 
+            <TextField
+              id="profile-opening-date"
+              label="Data de abertura do MEI"
+              type="date"
+              hint="Usada para calcular o limite proporcional no ano de abertura. Deixe em branco se o MEI foi aberto antes deste ano."
+              error={errors.meiOpeningDate?.message}
+              disabled={mutation.isPending}
+              {...register('meiOpeningDate', {
+                onChange: () => setSuccessMessage(null),
+              })}
+            />
+
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => {
-                  reset({ name: profile.name, email: profile.email })
+                  reset({
+                    name: profile.name,
+                    email: profile.email,
+                    meiOpeningDate: profile.meiOpeningDate ?? '',
+                  })
                   setFormError(null)
                 }}
                 disabled={!isDirty || mutation.isPending}

@@ -116,6 +116,7 @@ describe('RegisterPage (OF01)', () => {
           name: 'Maria Souza',
           email: 'maria@exemplo.com',
           password: 'segredo123',
+          role: 'MEI',
         },
       },
       {
@@ -126,7 +127,7 @@ describe('RegisterPage (OF01)', () => {
     const sessao = JSON.parse(sessionStorage.getItem(AUTH_STORAGE_KEY)!)
     expect(sessao.token).toBe('jwt-da-maria')
     expect(sessao.user.name).toBe('Maria Souza')
-    expect(screen.getByText('Olá, Maria Souza')).toBeInTheDocument()
+    expect(screen.getAllByText('Olá, Maria Souza').length).toBeGreaterThan(0)
   })
 
   it('valida os campos sem chamar o servidor', async () => {

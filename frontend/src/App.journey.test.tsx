@@ -46,6 +46,7 @@ function mockBackend(initialAccumulated: number) {
         expiresInSeconds: 1800,
       })
     }
+    if (path.startsWith('/das')) return jsonResponse(200, [])
     if (path === '/transactions/summary') {
       return jsonResponse(200, {
         month: url.searchParams.get('month'),

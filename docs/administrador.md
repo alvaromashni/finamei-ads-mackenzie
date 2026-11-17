@@ -1,6 +1,8 @@
 # Papel Administrador
 
-O administrador gerencia contas (listar, consultar status, ativar/desativar e liberar bloqueio de login). Ele **não** recebe acesso implícito aos dados financeiros de ninguém: lançamentos, categorias, DAS, faturamento e relatórios continuam filtrados pelo id do próprio token.
+O administrador gerencia contas (listar, consultar status, ativar/desativar e liberar bloqueio de login), pela API e pela tela **Contas**. Ele **não** recebe acesso implícito aos dados financeiros de ninguém: lançamentos, categorias, DAS, faturamento e relatórios continuam filtrados pelo id do próprio token. Tentar alterar o lançamento de outra pessoa responde 403.
+
+A tela **Contas** (`/admin/usuarios`), visível só para o administrador, lista as contas e permite inativar ou reativar. Uma conta inativa recebe, no login com a senha correta, a mensagem "Esta conta está inativa. Entre em contato com o suporte para reativá-la."
 
 ## Como criar um administrador
 
@@ -53,4 +55,4 @@ O `JwtAuthenticationFilter` consulta o banco a cada requisição autenticada (`e
 
 ## Isolamento dos dados financeiros
 
-`AdminFinancialIsolationTest` prova que um ADMIN não vê lançamentos, saldo, faturamento, categorias nem guias DAS de um MEI e não consegue editar ou apagar lançamento de outro usuário (404). Observação: por regra existente (ONF05), `ADMIN` ainda pode gravar nos módulos financeiros, mas somente nos próprios dados.
+`AdminFinancialIsolationTest` prova que um ADMIN não vê lançamentos, saldo, faturamento, categorias nem guias DAS de um MEI e não consegue editar ou apagar lançamento de outro usuário (403). Observação: por regra existente (ONF05), `ADMIN` ainda pode gravar nos módulos financeiros, mas somente nos próprios dados.

@@ -29,6 +29,19 @@ export function toIsoDate(date: Date) {
   return `${toYearMonth(date)}-${day}`
 }
 
+const dateTimeFormatter = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeStyle: 'short',
+  timeZone: 'America/Sao_Paulo',
+})
+
+/** "17/11/2026 às 17:40" in Brasília. */
+export function formatDateTime(isoDateTime: string) {
+  const date = new Date(isoDateTime)
+  if (Number.isNaN(date.getTime())) return isoDateTime
+  return dateTimeFormatter.format(date).replace(',', ' às')
+}
+
 /** "2026-09-15" -> "15/09/2026", without going through Date to avoid timezone shifts. */
 export function formatDate(isoDate: string) {
   const [year, month, day] = isoDate.split('-')

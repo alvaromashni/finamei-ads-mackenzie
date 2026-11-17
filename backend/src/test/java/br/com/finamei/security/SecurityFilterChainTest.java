@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.finamei.user.User;
-import java.lang.reflect.Field;
+import br.com.finamei.user.UserRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,9 @@ class SecurityFilterChainTest {
 
 	@Autowired
 	private JwtService jwtService;
+
+	@Autowired
+	private UserRepository userRepository;
 
 	@Test
 	void deveRejeitarAcessoARotaProtegidaSemToken() throws Exception {
@@ -105,11 +108,8 @@ class SecurityFilterChainTest {
 				.andExpect(header().doesNotExist(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN));
 	}
 
-	private User criarUsuario() throws Exception {
-		User usuario = new User("Maria Silva", "maria@exemplo.com", "hash");
-		Field campo = User.class.getDeclaredField("id");
-		campo.setAccessible(true);
-		campo.set(usuario, UUID.randomUUID());
-		return usuario;
+	private User criarUsuario() {
+		return userRepository.save(new User(
+				"Maria Silva", "maria." + UUID.randomUUID() + "@exemplo.com", "hash"));
 	}
 }

@@ -100,13 +100,10 @@ Abra <http://localhost:5173> no navegador. Em modo de desenvolvimento, a interfa
 1. Na tela de login, clique em **Criar conta** e cadastre um usuário. A senha precisa ter no mínimo 8 caracteres, com pelo menos uma letra e um número.
 2. Depois do cadastro você entra direto no painel. As categorias padrão já vêm criadas, e as guias do DAS do ano são geradas no primeiro acesso à tela **DAS**.
 
-Todo cadastro pela tela cria um usuário **MEI**. Os perfis **Contador** e **Administrador** são atribuídos direto no banco (não há tela para isso, de propósito). Para testar esses perfis, cadastre outra conta pela tela e promova-a:
+No cadastro dá para escolher **Microempreendedor** ou **Contador**. O perfil **Administrador** continua sendo atribuído direto no banco (não há opção pública para isso). Para testar o administrador, cadastre uma conta e promova-a:
 
 ```bash
-# Contador: depois, entre como MEI, abra o menu "Contador" e libere o acesso para este e-mail
-docker compose exec db psql -U finamei -d finamei -c "UPDATE users SET role='ACCOUNTANT' WHERE email='contador@exemplo.com'"
-
-# Administrador (ver docs/administrador.md)
+# Administrador (ver docs/administrador.md). Depois, em Contas, dá para inativar e reativar usuários.
 docker compose exec db psql -U finamei -d finamei -c "UPDATE users SET role='ADMIN' WHERE email='admin@exemplo.com'"
 ```
 
@@ -170,6 +167,9 @@ Tudo tem valor padrão para desenvolvimento local. Só mude se precisar.
 | `JWT_EXPIRATION_MINUTES` | `30` | Duração da sessão |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,https://finamei-ads-mackenzie.vercel.app` | Origens autorizadas a chamar a API |
 | `LOGIN_MAX_FAILED_ATTEMPTS` / `LOGIN_LOCK_MINUTES` | `5` / `15` | Bloqueio de login após tentativas erradas |
+| `APP_PUBLIC_URL` | `http://localhost:5173` | Endereço do frontend usado no link de redefinição de senha |
+| `PASSWORD_RESET_MINUTES` | `30` | Validade do link de redefinição |
+| `MAIL_HOST` / `MAIL_PORT` / `MAIL_USERNAME` / `MAIL_PASSWORD` / `MAIL_FROM` | vazio | SMTP do e-mail de redefinição. Sem `MAIL_HOST`, o link sai no log da API |
 
 Exemplo, mudando a porta do banco para 5433:
 

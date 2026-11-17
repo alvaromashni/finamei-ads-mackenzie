@@ -37,6 +37,7 @@ export function RegisterPage() {
       email: '',
       password: '',
       passwordConfirmation: '',
+      role: 'MEI',
     },
   })
 
@@ -45,10 +46,10 @@ export function RegisterPage() {
     return <Navigate to="/" replace />
   }
 
-  const onSubmit = handleSubmit(({ name, email, password }) => {
+  const onSubmit = handleSubmit(({ name, email, password, role }) => {
     setFormError(null)
     mutation.mutate(
-      { name, email, password },
+      { name, email, password, role },
       {
         onSuccess: ({ session }) => {
           if (!session) {
@@ -92,6 +93,36 @@ export function RegisterPage() {
           <form noValidate onSubmit={onSubmit} className="space-y-5">
             {formError && <FormAlert tone="error">{formError}</FormAlert>}
 
+            <fieldset>
+              <legend className="block text-sm font-medium text-slate-800">
+                Perfil
+              </legend>
+              <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                {(
+                  [
+                    ['MEI', 'Microempreendedor'],
+                    ['ACCOUNTANT', 'Contador'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label
+                    key={value}
+                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 has-[:checked]:border-emerald-700 has-[:checked]:bg-emerald-50"
+                  >
+                    <input
+                      type="radio"
+                      value={value}
+                      className="accent-emerald-700"
+                      {...register('role')}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+              <p className="mt-1 text-sm text-slate-500">
+                O contador só consulta os relatórios dos clientes que liberarem
+                acesso. O microempreendedor registra as finanças do MEI.
+              </p>
+            </fieldset>
             <TextField
               id="register-name"
               label="Nome"

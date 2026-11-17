@@ -13,6 +13,8 @@ export type Profile = AuthUser
 export type UpdateProfileRequest = {
   name: string
   email: string
+  meiOpeningDate?: string | null
+  clearMeiOpeningDate?: boolean
 }
 
 export const PROFILE_PATH = '/users/me'

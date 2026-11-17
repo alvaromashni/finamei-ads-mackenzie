@@ -83,10 +83,10 @@ Critério de pronto: um segundo usuário (contador) loga com conta própria e v�
 - **Front (ambos)**: testes com Vitest/RTL nos formulários e fluxos críticos (login, registrar lançamento, faturamento); revisão final de usabilidade (ONF01/ONF02) e cross-browser (ONF08).
 - **Todos**: ensaio da apresentação/demo final e atualização da documentação do projeto com o que foi efetivamente entregue.
 
-Critério de pronto: sistema cobre OF01–OF17 (exceto OF03), regras de negócio RN01–RN11 (exceto RN10), e os objetivos não funcionais ONF01–ONF11 verificados manualmente ou por teste.
+Critério de pronto: sistema cobre OF01–OF17, regras de negócio RN01–RN11 e os objetivos não funcionais ONF01–ONF11 verificados manualmente ou por teste.
 
 ---
 
 ## Backlog (fora do plano de 2 meses)
 
-- **OF03 / RN10 — Redefinição de senha por e-mail**: descoberta pelo time como fora de escopo por enquanto. Se retomada, manter a restrição de "sem API de terceiros": gerar o link de redefinição de uso único e expô-lo via log/tela de desenvolvimento em vez de enviar e-mail real, ou introduzir um SMTP local (ex: Mailpit) só nesse momento, sem comprometer o cronograma atual.
+- **OF03 / RN10 — Redefinição de senha**: implementada com link de uso único (30 minutos). Sem `MAIL_HOST`, o link vai para o log da API; com SMTP configurado, vai por e-mail.

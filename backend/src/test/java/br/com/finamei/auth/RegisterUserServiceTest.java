@@ -36,7 +36,7 @@ class RegisterUserServiceTest {
 
 	@Test
 	void deveCadastrarUsuarioComEmailNormalizadoESenhaComHash() {
-		RegisterUserRequest request = new RegisterUserRequest("Maria Silva", " Maria@Exemplo.com ", "senha123");
+		RegisterUserRequest request = new RegisterUserRequest("Maria Silva", " Maria@Exemplo.com ", "senha123", null);
 		when(userRepository.existsByEmail("maria@exemplo.com")).thenReturn(false);
 		when(passwordEncoder.encode("senha123")).thenReturn("hash-gerado");
 		when(userRepository.save(any(User.class))).thenAnswer(chamada -> chamada.getArgument(0));
@@ -52,7 +52,7 @@ class RegisterUserServiceTest {
 
 	@Test
 	void deveRejeitarCadastroQuandoEmailJaExiste() {
-		RegisterUserRequest request = new RegisterUserRequest("Maria Silva", "maria@exemplo.com", "senha123");
+		RegisterUserRequest request = new RegisterUserRequest("Maria Silva", "maria@exemplo.com", "senha123", null);
 		when(userRepository.existsByEmail("maria@exemplo.com")).thenReturn(true);
 
 		assertThatThrownBy(() -> registerUserService.register(request))
@@ -61,7 +61,7 @@ class RegisterUserServiceTest {
 
 	@Test
 	void deveRejeitarCadastroQuandoBancoRecusaEmailDuplicadoConcorrente() {
-		RegisterUserRequest request = new RegisterUserRequest("Maria Silva", "maria@exemplo.com", "senha123");
+		RegisterUserRequest request = new RegisterUserRequest("Maria Silva", "maria@exemplo.com", "senha123", null);
 		when(userRepository.existsByEmail("maria@exemplo.com")).thenReturn(false);
 		when(passwordEncoder.encode("senha123")).thenReturn("hash-gerado");
 		when(userRepository.save(any(User.class))).thenThrow(new DataIntegrityViolationException("email duplicado"));

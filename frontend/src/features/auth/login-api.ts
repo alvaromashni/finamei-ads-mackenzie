@@ -1,4 +1,5 @@
 import { apiFetch } from '../../lib/http'
+import type { AuthUser } from './auth-context'
 
 /** Mirrors LoginRequest/LoginResponse from the backend (POST /auth/login). */
 export type LoginRequest = {
@@ -10,6 +11,9 @@ export type LoginResponse = {
   token: string
   tokenType: string
   expiresInSeconds: number
+  user?: AuthUser | null
+  /** Acesso anterior a este login. Nulo no primeiro acesso. */
+  lastAccessAt?: string | null
 }
 
 export const LOGIN_PATH = '/auth/login'

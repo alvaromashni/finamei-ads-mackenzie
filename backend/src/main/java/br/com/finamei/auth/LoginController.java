@@ -23,4 +23,13 @@ public class LoginController {
 	public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
 		return ResponseEntity.ok(loginService.login(request));
 	}
+
+	/**
+	 * Mantém a sessão viva enquanto há uso (ONF04). O filtro renova o JWT quando o token
+	 * atual já tem mais de um minuto; esta rota só existe para o frontend avisar atividade.
+	 */
+	@PostMapping("/session")
+	public ResponseEntity<Void> touchSession() {
+		return ResponseEntity.noContent().build();
+	}
 }

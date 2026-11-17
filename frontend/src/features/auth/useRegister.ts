@@ -28,8 +28,9 @@ export function useRegisterMutation() {
       if (!session) return
       signIn({
         token: session.token,
-        user,
+        user: session.user ?? user,
         expiresAt: Date.now() + session.expiresInSeconds * 1000,
+        lastAccessAt: session.lastAccessAt ?? new Date().toISOString(),
       })
     },
   })

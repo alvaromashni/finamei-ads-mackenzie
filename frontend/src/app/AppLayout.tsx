@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useSessionKeepAlive } from '../features/auth/useSessionKeepAlive'
 import { useAuth } from '../features/auth/useAuth'
 
 const meiNavItems = [
@@ -19,13 +20,21 @@ const accountantNavItems = [
   { to: '/perfil', label: 'Meu perfil' },
 ]
 
+const adminNavItem = { to: '/admin/usuarios', label: 'Contas' }
+
 const focusRing =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700'
 
 /** Shell shared by every authenticated screen: header, navigation and sign out. */
 export function AppLayout() {
   const { user, role, signOut } = useAuth()
-  const navItems = role === 'ACCOUNTANT' ? accountantNavItems : meiNavItems
+  useSessionKeepAlive()
+  const navItems =
+    role === 'ACCOUNTANT'
+      ? accountantNavItems
+      : role === 'ADMIN'
+        ? [...meiNavItems, adminNavItem]
+        : meiNavItems
   const queryClient = useQueryClient()
   const { pathname } = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -69,9 +78,7 @@ export function AppLayout() {
 
           <div className="flex items-center gap-3">
             {user?.name && (
-              <span className="hidden text-sm text-slate-600 sm:inline">
-                Olá, {user.name}
-              </span>
+              <span className="text-sm text-slate-600">Olá, {user.name}</span>
             )}
             <button
               type="button"

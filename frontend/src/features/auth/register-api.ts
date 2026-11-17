@@ -6,6 +6,8 @@ export type RegisterRequest = {
   name: string
   email: string
   password: string
+  /** MEI por padrão. ACCOUNTANT cria a conta de contador usada no UC-008. */
+  role?: 'MEI' | 'ACCOUNTANT'
 }
 
 export const REGISTER_PATH = '/auth/register'

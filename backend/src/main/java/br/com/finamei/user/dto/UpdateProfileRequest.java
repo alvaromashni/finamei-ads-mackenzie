@@ -1,10 +1,14 @@
 package br.com.finamei.user.dto;
 
+import java.time.LocalDate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/** Campos de perfil que o próprio usuário pode alterar. Senha e papel ficam de fora de propósito. */
+/**
+ * Campos de perfil que o próprio usuário pode alterar. Senha e papel ficam de fora de propósito.
+ * {@code meiOpeningDate} nulo e {@code clearMeiOpeningDate} falso mantêm a data já gravada.
+ */
 public record UpdateProfileRequest(
 
 		@NotBlank(message = "Informe o nome.")
@@ -14,5 +18,9 @@ public record UpdateProfileRequest(
 		@NotBlank(message = "Informe o e-mail.")
 		@Email(message = "Informe um e-mail válido.")
 		@Size(max = 180, message = "O e-mail deve ter no máximo 180 caracteres.")
-		String email) {
+		String email,
+
+		LocalDate meiOpeningDate,
+
+		Boolean clearMeiOpeningDate) {
 }

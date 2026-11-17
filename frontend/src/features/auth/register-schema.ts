@@ -22,6 +22,7 @@ export const registerSchema = z
         'A senha deve ter no mínimo 8 caracteres, com pelo menos uma letra e um número.',
       ),
     passwordConfirmation: z.string().min(1, 'Repita a senha.'),
+    role: z.enum(['MEI', 'ACCOUNTANT']),
   })
   .refine((values) => values.password === values.passwordConfirmation, {
     path: ['passwordConfirmation'],
