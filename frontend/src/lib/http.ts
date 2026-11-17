@@ -26,6 +26,20 @@ export type ApiFetchOptions = RequestInit & {
   token?: string | null
 }
 
+type TokenRenewalHandler = (token: string) => void
+
+let tokenRenewalHandler: TokenRenewalHandler | null = null
+
+/** O backend reemite o JWT enquanto a sessão está em uso (ONF04). */
+export function setTokenRenewalHandler(handler: TokenRenewalHandler | null) {
+  tokenRenewalHandler = handler
+}
+
+function notifyRenewedToken(response: Response) {
+  const renewed = response.headers.get('X-Renewed-Token')
+  if (renewed) tokenRenewalHandler?.(renewed)
+}
+
 async function request(
   path: string,
   { token, ...init }: ApiFetchOptions,
@@ -44,6 +58,7 @@ async function request(
     throw new HttpError(response.status, body)
   }
 
+  notifyRenewedToken(response)
   return response
 }
 

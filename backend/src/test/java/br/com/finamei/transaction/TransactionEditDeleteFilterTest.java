@@ -177,8 +177,9 @@ class TransactionEditDeleteFilterTest {
         transactionRepository.flush();
 
         editar(doJoao.getId(), corpo(TransactionType.INCOME, vendaDeProdutos, "1.00", "2026-09-10"))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+                .andExpect(jsonPath("$.message").value("Você não tem permissão para acessar este recurso."));
         editar(excluido.getId(), corpo(TransactionType.INCOME, vendaDeProdutos, "1.00", "2026-09-10"))
                 .andExpect(status().isNotFound());
 
@@ -206,11 +207,11 @@ class TransactionEditDeleteFilterTest {
     }
 
     @Test
-    void deveResponder404AoExcluirDeNovoOuExcluirDeOutroUsuario() throws Exception {
+    void deveResponder403AoExcluirDeOutroUsuarioE404AoExcluirDeNovo() throws Exception {
         User joao = userRepository.save(new User("João Souza", "joao.exclusao@exemplo.com", "hash"));
         Transaction venda = lancar(maria, TransactionType.INCOME, vendaDeProdutos, "100.00", "2026-09-10", "Venda");
 
-        excluir(joao, venda.getId()).andExpect(status().isNotFound());
+        excluir(joao, venda.getId()).andExpect(status().isForbidden());
         excluir(maria, venda.getId()).andExpect(status().isNoContent());
         excluir(maria, venda.getId()).andExpect(status().isNotFound());
     }

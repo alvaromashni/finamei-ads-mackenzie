@@ -3,13 +3,16 @@ package br.com.finamei.auth;
 import br.com.finamei.auth.dto.LoginRequest;
 import br.com.finamei.auth.dto.LoginResponse;
 import br.com.finamei.security.JwtService;
+import br.com.finamei.auth.dto.UserResponse;
 import br.com.finamei.shared.error.AccountLockedException;
+import br.com.finamei.shared.error.InactiveAccountException;
 import br.com.finamei.shared.error.InvalidCredentialsException;
 import br.com.finamei.user.User;
 import br.com.finamei.user.UserRepository;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -50,7 +53,9 @@ public class LoginService {
 	}
 
 	// As falhas precisam ser gravadas mesmo quando a exceção sobe, então não há rollback para elas.
-	@Transactional(noRollbackFor = {InvalidCredentialsException.class, AccountLockedException.class})
+	@Transactional(noRollbackFor = {
+			InvalidCredentialsException.class, AccountLockedException.class, InactiveAccountException.class
+	})
 	public LoginResponse login(LoginRequest request) {
 		String email = request.email().trim().toLowerCase();
 		Instant now = clock.instant();
@@ -63,10 +68,15 @@ public class LoginService {
 			attempt.clearExpiredLock(now);
 		}
 
-		User user = userRepository.findByEmail(email).filter(User::isActive).orElse(null);
-		boolean authenticated = user != null && passwordEncoder.matches(request.password(), user.getPasswordHash());
+		User user = userRepository.findByEmail(email).orElse(null);
+		boolean passwordMatches = user != null && passwordEncoder.matches(request.password(), user.getPasswordHash());
 
-		if (!authenticated) {
+		// Senha certa de conta inativa não entra na contagem de bloqueio (fluxo 4c, separado do 4b).
+		if (user != null && passwordMatches && !user.isActive()) {
+			throw new InactiveAccountException();
+		}
+
+		if (!passwordMatches) {
 			if (attempt == null) {
 				attempt = new LoginAttempt(email, now);
 			}
@@ -81,7 +91,10 @@ public class LoginService {
 		if (attempt != null) {
 			loginAttemptRepository.delete(attempt);
 		}
+		OffsetDateTime previousAccess = user.getLastAccessAt();
+		user.recordAccess(OffsetDateTime.now(clock));
+		userRepository.save(user);
 		String token = jwtService.generateToken(user);
-		return LoginResponse.of(token, jwtService.getExpirationSeconds());
+		return LoginResponse.of(token, jwtService.getExpirationSeconds(), UserResponse.from(user), previousAccess);
 	}
 }

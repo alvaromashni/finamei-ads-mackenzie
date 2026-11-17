@@ -50,6 +50,18 @@ public class ApiExceptionHandler {
 				.body(ErrorResponse.of("ACCOUNT_LOCKED", ex.getMessage()));
 	}
 
+	@ExceptionHandler(InactiveAccountException.class)
+	public ResponseEntity<ErrorResponse> handleInactiveAccount(InactiveAccountException ex) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN)
+				.body(ErrorResponse.of("ACCOUNT_INACTIVE", ex.getMessage()));
+	}
+
+	@ExceptionHandler(PasswordResetException.class)
+	public ResponseEntity<ErrorResponse> handlePasswordReset(PasswordResetException ex) {
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+				.body(ErrorResponse.of(ex.getCode(), ex.getMessage()));
+	}
+
 	@ExceptionHandler(AccountantAccessAlreadyGrantedException.class)
 	public ResponseEntity<ErrorResponse> handleAccountantAccessAlreadyGranted(
 			AccountantAccessAlreadyGrantedException ex) {

@@ -1,5 +1,6 @@
 package br.com.finamei.auth.dto;
 
+import br.com.finamei.user.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -20,5 +21,8 @@ public record RegisterUserRequest(
 		@Pattern(
 				regexp = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$",
 				message = "A senha deve ter no mínimo 8 caracteres, com pelo menos uma letra e um número.")
-		String password) {
+		String password,
+
+		/** Opcional. Ausente ou nulo cria um MEI. ADMIN não é aceito por este endpoint. */
+		Role role) {
 }

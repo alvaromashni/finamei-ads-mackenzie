@@ -90,6 +90,8 @@ describe('ProfilePage', () => {
     expect(JSON.parse(String(init?.body))).toEqual({
       name: 'Maria S. Oliveira',
       email: 'maria@exemplo.com',
+      meiOpeningDate: null,
+      clearMeiOpeningDate: true,
     })
 
     const sessao = JSON.parse(sessionStorage.getItem(AUTH_STORAGE_KEY) ?? '{}')

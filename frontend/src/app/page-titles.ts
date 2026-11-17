@@ -4,6 +4,9 @@ const APP_NAME = 'FinaMEI'
 const titles: [RegExp, string][] = [
   [/^\/login$/, 'Entrar'],
   [/^\/cadastro$/, 'Criar conta'],
+  [/^\/recuperar-senha$/, 'Esqueci minha senha'],
+  [/^\/redefinir-senha$/, 'Redefinir senha'],
+  [/^\/admin\/usuarios$/, 'Contas'],
   [/^\/painel$/, 'Painel'],
   [/^\/lancamentos$/, 'Lançamentos'],
   [/^\/das$/, 'Controle do DAS'],

@@ -6,6 +6,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import br.com.finamei.user.User;
 import br.com.finamei.user.UserRepository;
 import java.io.IOException;
 import java.util.List;
@@ -17,6 +18,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+	static final String RENEWED_TOKEN_HEADER = "X-Renewed-Token";
 
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String BEARER_PREFIX = "Bearer ";
@@ -35,18 +38,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		String header = request.getHeader(AUTHORIZATION_HEADER);
 
 		if (header != null && header.startsWith(BEARER_PREFIX) && SecurityContextHolder.getContext().getAuthentication() == null) {
-			authenticate(request, header.substring(BEARER_PREFIX.length()));
+			authenticate(request, response, header.substring(BEARER_PREFIX.length()));
 		}
 
 		filterChain.doFilter(request, response);
 	}
 
-	private void authenticate(HttpServletRequest request, String token) {
+	private void authenticate(HttpServletRequest request, HttpServletResponse response, String token) {
 		try {
 			Claims claims = jwtService.parseClaims(token);
 			UUID userId = UUID.fromString(claims.getSubject());
-			// Conta desativada por um administrador perde o acesso na hora, mesmo com token ainda válido.
-			if (userRepository.existsByIdAndActiveFalse(userId)) {
+			User user = userRepository.findById(userId).orElse(null);
+			// Conta desativada perde o acesso na hora, mesmo com token ainda válido.
+			if (user == null || !user.isActive() || sessionVersionDiffers(claims, user)) {
 				SecurityContextHolder.clearContext();
 				return;
 			}
@@ -56,8 +60,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			var authentication = new UsernamePasswordAuthenticationToken(userId, null, authorities);
 			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 			SecurityContextHolder.getContext().setAuthentication(authentication);
+			// Cada uso depois do primeiro minuto empurra o fim da sessão (ONF04).
+			if (jwtService.shouldRenew(claims)) {
+				response.setHeader(RENEWED_TOKEN_HEADER, jwtService.renew(claims));
+			}
 		} catch (JwtException | IllegalArgumentException ex) {
 			SecurityContextHolder.clearContext();
 		}
+	}
+
+	/** Token sem o claim conta como versão 0, a das contas que ainda não trocaram a senha. */
+	private static boolean sessionVersionDiffers(Claims claims, User user) {
+		Integer version = claims.get(JwtService.SESSION_VERSION_CLAIM, Integer.class);
+		return (version == null ? 0 : version) != user.getSessionVersion();
 	}
 }

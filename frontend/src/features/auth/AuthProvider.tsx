@@ -13,7 +13,8 @@ import {
   type AuthUser,
   type SignOutReason,
 } from './auth-context'
-import { getTokenRole } from './token-claims'
+import { setTokenRenewalHandler } from '../../lib/http'
+import { getTokenExpiresAt, getTokenRole } from './token-claims'
 
 const MAX_TIMEOUT_MS = 2_147_483_647
 
@@ -78,6 +79,23 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     [persist],
   )
 
+  // Sliding session: the API sends a new token after the first minute of use (ONF04).
+  useEffect(() => {
+    setTokenRenewalHandler((token) => {
+      setSession((current) => {
+        if (!current) return current
+        const next = {
+          ...current,
+          token,
+          expiresAt: getTokenExpiresAt(token) ?? current.expiresAt,
+        }
+        writeStoredSession(next)
+        return next
+      })
+    })
+    return () => setTokenRenewalHandler(null)
+  }, [])
+
   const updateUser = useCallback((user: AuthUser) => {
     setSession((current) => {
       if (!current) return current
@@ -110,6 +128,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
       signOut,
       sessionExpired,
       updateUser,
+      lastAccessAt: session?.lastAccessAt ?? null,
     }),
     [session, sessionExpired, signIn, signOut, updateUser],
   )

@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEffect, useMemo, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
@@ -8,7 +9,10 @@ import { TextField } from '../../components/TextField'
 import { getApiErrorMessage } from '../../lib/api-error'
 import { applyApiFieldErrors } from '../../lib/form-errors'
 import { HttpError } from '../../lib/http'
+import { useAuthorizedFetch } from '../auth/useAuthorizedFetch'
 import { useCategoriesQuery } from '../category/useCategories'
+import { fetchRevenueSummary } from '../dashboard/dashboard-api'
+import { revenueAlertMessage } from '../revenue/revenue-message'
 import type { Transaction, TransactionType } from './transaction-api'
 import {
   createTransactionSchema,
@@ -69,6 +73,9 @@ export function TransactionForm({
   const isPending = createMutation.isPending || updateMutation.isPending
   const [formError, setFormError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [revenueAlert, setRevenueAlert] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+  const authorizedFetch = useAuthorizedFetch()
 
   const {
     register,
@@ -116,7 +123,10 @@ export function TransactionForm({
       ? transaction.category
       : null
 
-  const clearFeedback = () => setSuccessMessage(null)
+  const clearFeedback = () => {
+    setSuccessMessage(null)
+    setRevenueAlert(null)
+  }
 
   // Fields stay enabled while saving: a server field error must be able to
   // take the focus (ONF01). The submit button prevents double submissions.
@@ -160,6 +170,19 @@ export function TransactionForm({
             ? 'Receita registrada com sucesso.'
             : 'Despesa registrada com sucesso.',
         )
+        if (values.type !== 'INCOME') {
+          setRevenueAlert(null)
+          return
+        }
+        const year = Number(values.date.slice(0, 4))
+        void queryClient
+          .fetchQuery({
+            queryKey: ['dashboard', 'revenue', year],
+            queryFn: () =>
+              authorizedFetch((token) => fetchRevenueSummary(token, year)),
+          })
+          .then((summary) => setRevenueAlert(revenueAlertMessage(summary)))
+          .catch(() => setRevenueAlert(null))
       },
       onError: handleError,
     })
@@ -169,6 +192,14 @@ export function TransactionForm({
     <form noValidate onSubmit={onSubmit} className="mt-4 space-y-5">
       {formError && <FormAlert tone="error">{formError}</FormAlert>}
       {successMessage && <FormAlert tone="success">{successMessage}</FormAlert>}
+      {revenueAlert && (
+        <p
+          role="alert"
+          className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950"
+        >
+          {revenueAlert}
+        </p>
+      )}
 
       <fieldset>
         <legend className="block text-sm font-medium text-slate-800">

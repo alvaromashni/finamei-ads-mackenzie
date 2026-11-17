@@ -59,6 +59,18 @@ Em **Environment**, cadastre:
 | `CORS_ALLOWED_ORIGINS` | `https://finamei-ads-mackenzie.vercel.app` | não (já é o padrão do perfil `prod`) |
 | `JWT_EXPIRATION_MINUTES` | `30` | não |
 | `DAS_MONTHLY_AMOUNT` | valor mensal do DAS, ex.: `76.90` | não |
+| `APP_PUBLIC_URL` | `https://finamei-ads-mackenzie.vercel.app` | sim, para o link de redefinição de senha apontar para o frontend publicado |
+| `MAIL_HOST` | servidor SMTP (ex.: `smtp.seudominio.com`) | não |
+| `MAIL_PORT` | `587` | não |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | usuário e senha do SMTP | não, mas necessários se o servidor exige autenticação |
+| `MAIL_FROM` | remetente visível no e-mail | não; se vazio, usa `MAIL_USERNAME` |
+| `MAIL_STARTTLS` | `true` | não |
+
+Sem `MAIL_HOST`, a API sobe normalmente e escreve o link de redefinição no log do Render (procure por `Link de redefinição de senha`). Com `MAIL_HOST`, o link vai por e-mail e não é registrado.
+
+A sessão dura 30 minutos **sem uso**. Cada requisição autenticada depois do primeiro minuto recebe um token novo no cabeçalho `X-Renewed-Token`. Não é preciso mudar `JWT_EXPIRATION_MINUTES` para isso.
+
+O frontend na Vercel precisa do arquivo `frontend/vercel.json` (já versionado) e do diretório raiz do projeto apontando para `frontend`. Sem essa reescrita, recarregar `/login` ou `/cadastro` devolve 404 da Vercel.
 
 - **Não** cadastre `PORT`: o Render define sozinho, e a aplicação já lê essa variável.
 - Para `DB_URL`, use o **Hostname interno** do banco (o curto, como `dpg-xxxx-a`). Ele só funciona com o banco e o backend na mesma região. Se usar o hostname externo, acrescente `?sslmode=require` ao final da URL.

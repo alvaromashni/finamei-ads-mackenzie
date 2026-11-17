@@ -129,11 +129,13 @@ class AdminFinancialIsolationTest {
 								{"type": "INCOME", "amount": 1, "date": "2026-09-03",
 								 "categoryId": "%s", "description": "Adulterado"}
 								""".formatted(categoriaDoMei)))
-				.andExpect(status().isNotFound());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
 
 		mockMvc.perform(delete("/api/v1/transactions/" + lancamentoDoMei.getId())
 						.header(HttpHeaders.AUTHORIZATION, bearer(admin)))
-				.andExpect(status().isNotFound());
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("ACCESS_DENIED"));
 
 		mockMvc.perform(get("/api/v1/transactions/summary").param("month", "2026-09")
 						.header(HttpHeaders.AUTHORIZATION, bearer(mei)))

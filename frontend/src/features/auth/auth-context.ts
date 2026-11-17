@@ -10,6 +10,9 @@ export type AuthUser = {
   role: Role
   active: boolean
   createdAt: string
+  /** Data de abertura do MEI (YYYY-MM-DD), quando informada (RN01). */
+  meiOpeningDate?: string | null
+  lastAccessAt?: string | null
 }
 
 export type AuthSession = {
@@ -17,6 +20,8 @@ export type AuthSession = {
   user: AuthUser | null
   /** Epoch millis when the token expires; the session is dropped after it. */
   expiresAt?: number
+  /** Acesso anterior a este login (ISO-8601). No primeiro acesso, o horário do login. */
+  lastAccessAt?: string | null
 }
 
 export type SignOutReason = 'expired'
@@ -32,6 +37,8 @@ export type AuthContextValue = {
   signOut: (reason?: SignOutReason) => void
   /** True after the session expired, until the next sign in. */
   sessionExpired: boolean
+  /** Horário de último acesso mostrado no painel. */
+  lastAccessAt: string | null
   /** Atualiza os dados do usuário na sessão local (ex.: após editar o perfil). */
   updateUser: (user: AuthUser) => void
 }

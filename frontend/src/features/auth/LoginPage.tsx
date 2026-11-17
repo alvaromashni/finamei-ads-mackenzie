@@ -55,7 +55,10 @@ export function LoginPage() {
 
     mutation.mutate(values, {
       onError: (error) => {
-        if (error instanceof HttpError && error.status === 401) {
+        if (
+          error instanceof HttpError &&
+          (error.status === 401 || error.status === 403 || error.status === 423)
+        ) {
           resetField('password')
           setFormError(
             getApiErrorBody(error)?.message ?? INVALID_CREDENTIALS_MESSAGE,
@@ -91,8 +94,7 @@ export function LoginPage() {
               role="status"
               className="mb-5 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900"
             >
-              Sua sessão expirou por segurança. Entre novamente para continuar
-              de onde parou.
+              Sua sessão expirou. Entre novamente para continuar.
             </p>
           )}
           <form noValidate onSubmit={onSubmit} className="space-y-5">
@@ -123,6 +125,15 @@ export function LoginPage() {
               disabled={mutation.isPending}
               {...register('password')}
             />
+
+            <div className="flex justify-end">
+              <Link
+                to="/recuperar-senha"
+                className="rounded text-sm font-semibold text-emerald-800 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
 
             <button
               type="submit"

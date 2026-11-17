@@ -1,8 +1,18 @@
 package br.com.finamei.auth.dto;
 
-public record LoginResponse(String token, String tokenType, long expiresInSeconds) {
+import java.time.OffsetDateTime;
 
-	public static LoginResponse of(String token, long expiresInSeconds) {
-		return new LoginResponse(token, "Bearer", expiresInSeconds);
+/**
+ * @param lastAccessAt acesso anterior a este login; nulo no primeiro acesso
+ */
+public record LoginResponse(
+		String token,
+		String tokenType,
+		long expiresInSeconds,
+		UserResponse user,
+		OffsetDateTime lastAccessAt) {
+
+	public static LoginResponse of(String token, long expiresInSeconds, UserResponse user, OffsetDateTime lastAccessAt) {
+		return new LoginResponse(token, "Bearer", expiresInSeconds, user, lastAccessAt);
 	}
 }

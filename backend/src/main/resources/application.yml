@@ -22,6 +22,8 @@ server:
   port: ${SERVER_PORT:8080}
 
 app:
+  # Endereço do frontend, usado no link de redefinição de senha.
+  public-url: ${APP_PUBLIC_URL:http://localhost:5173}
   jwt:
     secret: ${JWT_SECRET:finamei-local-dev-jwt-secret-do-not-use-in-production-1234567890}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:30}
@@ -43,6 +45,16 @@ finamei:
     # RN09: bloqueio após N falhas seguidas de login, por M minutos.
     max-failed-attempts: ${LOGIN_MAX_FAILED_ATTEMPTS:5}
     lock-minutes: ${LOGIN_LOCK_MINUTES:15}
+    # RN10: o link de redefinição vale por este período.
+    password-reset-minutes: ${PASSWORD_RESET_MINUTES:30}
+  # Sem MAIL_HOST o link de redefinição vai para o log da API, não para uma caixa de e-mail.
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    from: ${MAIL_FROM:}
+    starttls: ${MAIL_STARTTLS:true}
   revenue:
     annual-limit: 81000.00
     attention-percent: 80

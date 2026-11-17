@@ -49,6 +49,7 @@ function mockApi({
     const url = String(input)
     if (url.includes('/transactions/summary')) return balance()
     if (url.includes('/revenue/summary')) return revenue()
+    if (url.includes('/das')) return jsonResponse(200, [])
     throw new Error(`URL inesperada: ${url}`)
   })
 }

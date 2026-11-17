@@ -18,3 +18,16 @@ export function getTokenRole(token: string): Role | null {
     return null
   }
 }
+
+/** Epoch millis of the JWT `exp` claim, when the token can be read. */
+export function getTokenExpiresAt(token: string): number | null {
+  try {
+    const payload = token.split('.')[1]
+    if (!payload) return null
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const claims = JSON.parse(atob(base64)) as { exp?: unknown }
+    return typeof claims.exp === 'number' ? claims.exp * 1000 : null
+  } catch {
+    return null
+  }
+}

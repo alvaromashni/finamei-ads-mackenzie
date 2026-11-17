@@ -10,10 +10,9 @@ export function useLoginMutation() {
     onSuccess: (response) => {
       signIn({
         token: response.token,
-        // The login response carries only the token; the profile is loaded
-        // by the screens that need it (GET /users/me).
-        user: null,
+        user: response.user ?? null,
         expiresAt: Date.now() + response.expiresInSeconds * 1000,
+        lastAccessAt: response.lastAccessAt ?? new Date().toISOString(),
       })
     },
   })

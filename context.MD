@@ -181,7 +181,7 @@ Diretrizes:
 - uma categoria inativa não pode ser usada em novos lançamentos;
 - cada usuário só pode acessar seus próprios dados, salvo acesso explícito e somente leitura concedido a contador;
 - após cinco tentativas inválidas de login, aplicar o bloqueio definido no roadmap;
-- redefinição de senha está fora do MVP;
+- a redefinição de senha envia um link de uso único, válido por 30 minutos; sem SMTP configurado, o link fica no log da API;
 - em caso de divergência, a documentação funcional em `docs/` prevalece sobre resumos deste arquivo.
 
 ## 9. Segurança e configuração

@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,7 +75,7 @@ public class TransactionService {
      * Edição (OF06, OF08) com as mesmas regras do cadastro. O lançamento pode manter
      * a categoria atual mesmo que ela tenha sido inativada depois (RN07).
      */
-    @Transactional
+    @Transactional(noRollbackFor = AccessDeniedException.class)
     public TransactionResponse update(UUID userId, UUID transactionId, TransactionRequest request) {
         Transaction transaction = findActiveOwned(userId, transactionId);
         validateDate(request);
@@ -93,7 +94,7 @@ public class TransactionService {
     }
 
     /** Exclusão lógica (RN08): o lançamento sai da lista, do saldo e do faturamento. */
-    @Transactional
+    @Transactional(noRollbackFor = AccessDeniedException.class)
     public void delete(UUID userId, UUID transactionId) {
         Transaction transaction = findActiveOwned(userId, transactionId);
         transaction.markAsDeleted();
@@ -143,10 +144,20 @@ public class TransactionService {
         return Objects.requireNonNullElse(value, BigDecimal.ZERO);
     }
 
-    // Lançamento de outro usuário ou já excluído responde 404 (ONF05, UC 4c).
+    /**
+     * Lançamento inexistente ou já excluído responde 404. Lançamento de outro usuário
+     * responde 403 e a tentativa fica na auditoria (ONF05, TST-046).
+     */
     private Transaction findActiveOwned(UUID userId, UUID transactionId) {
-        return transactionRepository.findByIdAndUserIdAndDeletedFalse(transactionId, userId)
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .filter(found -> !found.isDeleted())
                 .orElseThrow(() -> new ResourceNotFoundException("Lançamento não encontrado."));
+        if (!transaction.getUserId().equals(userId)) {
+            auditService.record(userId, AuditAction.DENY, AuditResourceType.TRANSACTION, transactionId,
+                    "access denied");
+            throw new AccessDeniedException("Você não tem permissão para acessar este recurso.");
+        }
+        return transaction;
     }
 
     private void validateDate(TransactionRequest request) {

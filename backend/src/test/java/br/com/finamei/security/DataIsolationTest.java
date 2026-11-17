@@ -11,6 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.finamei.accountantaccess.AccountantAccessService;
+import br.com.finamei.audit.AuditAction;
+import br.com.finamei.audit.AuditLogRepository;
+import br.com.finamei.audit.AuditResourceType;
 import br.com.finamei.accountantaccess.dto.AccountantAccessResponse;
 import br.com.finamei.category.CategoryRepository;
 import br.com.finamei.category.CategoryService;
@@ -84,6 +87,9 @@ class DataIsolationTest {
 	@Autowired
 	private AccountantAccessService accessService;
 
+	@Autowired
+	private AuditLogRepository auditLogRepository;
+
 	private User alice;
 	private User bruno;
 	private UUID categoriaDaAlice;
@@ -112,16 +118,20 @@ class DataIsolationTest {
 		mockMvc.perform(put(TRANSACTIONS_PATH + "/" + lancamentoDaAlice)
 						.header(HttpHeaders.AUTHORIZATION, bearer(bruno))
 						.contentType(MediaType.APPLICATION_JSON).content(corpo))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+				.andExpect(jsonPath("$.message").value("Você não tem permissão para acessar este recurso."));
 		mockMvc.perform(delete(TRANSACTIONS_PATH + "/" + lancamentoDaAlice)
 						.header(HttpHeaders.AUTHORIZATION, bearer(bruno)))
-				.andExpect(status().isNotFound())
-				.andExpect(jsonPath("$.code").value("NOT_FOUND"));
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.code").value("ACCESS_DENIED"))
+				.andExpect(jsonPath("$.message").value("Você não tem permissão para acessar este recurso."));
 
 		Transaction intacto = transactionRepository.findById(lancamentoDaAlice).orElseThrow();
 		assertThat(intacto.getDescription()).isEqualTo("Venda da Alice");
 		assertThat(intacto.isDeleted()).isFalse();
+		assertThat(auditLogRepository.findByResourceTypeAndResourceId(AuditResourceType.TRANSACTION, lancamentoDaAlice))
+				.anyMatch(log -> log.getAction() == AuditAction.DENY && log.getActorUserId().equals(bruno.getId()));
 	}
 
 	@Test
